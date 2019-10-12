@@ -2,14 +2,13 @@
 build=1
 
 
-
 print('Importing requirements...')
 import time,string,os,socket,getpass
 from ctypes import windll
 from random import randint
 from pathlib import Path
 
-windll.kernel32.SetConsoleTitleW('Logout Reminder - Build '+str(build))
+windll.kernel32.SetConsoleTitleW('Logout Reminder - Build '+str(build)) #Set console window title
 
 def cmd(x):
     os.system(str(x))
@@ -29,7 +28,7 @@ def display():
     asciiRaw()
 computer=str(socket.gethostname())
 username=str(getpass.getuser())
-driveArray = []
+driveArray = [] #Search for drives
 bitmask = windll.kernel32.GetLogicalDrives()
 for letter in string.ascii_uppercase:
     if bitmask & 1:
@@ -115,7 +114,7 @@ def confirmWrite():
         setupDrive()
 
 def commitWrite():
-    rand=randint(10000,99999)
+    rand=randint(10000,99999) #Create a random number for confirmation and filenames
     display()
     print('\nSelected Drive: '+selectedDrive+'\n\nTo begin flooding, please type this confirmation code: '+str(rand))
     confirm=input(str('\n>>> '))
@@ -126,7 +125,7 @@ def commitWrite():
     global start
     i=0
     print('\nCreating files...')
-    start=time.time()
+    start=time.time() #take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
         i=i+1
         filename='READ_ME ['+str(rand)+'] [#'+str(i)+'].txt'
@@ -139,10 +138,10 @@ def commitWrite():
             print(str(i)+'. [FAILED] '+str(x))
     
     global taken
-    taken=time.time()-start
+    taken=time.time()-start #calculate how long the operation took
 
-
-setupMessage()
+#Run the script
+setupMessage() #Start at the setupMessage module
 print('\n')
 asciiRaw()
 print('Created '+str(i)+' files in '+str(round(taken, 2))+' seconds!\nPress any key to exit...')
