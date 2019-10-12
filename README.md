@@ -23,8 +23,8 @@ Requirements:
 *If you are planning to use a python install from the USB, please create a shortcut to run the script using Python on the USB
 
 ![Final Confirmation](https://imgur.com/PPMd3Mv.png)
-![Output log](https://imgur.com/DpM2PDe.png)
-![Text file output](https://imgur.com/Sfxc1cY.png)
+![File Creation](https://i.imgur.com/2hwxeuN.png)
+![Generated Text File](https://imgur.com/Sfxc1cY.png)
 
 
 Written in Python 3.7.4 on Windows 10

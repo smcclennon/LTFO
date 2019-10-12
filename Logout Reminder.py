@@ -1,5 +1,6 @@
 #Logout Reminder
-build=1
+#github.com/smcclennon/Logout-Reminder
+build=2
 
 
 print('Importing requirements...')
@@ -35,7 +36,7 @@ for letter in string.ascii_uppercase:
         driveArray.append(letter)
     bitmask >>= 1
 
-
+#You can customise this!
 defaultMsg='You forgot to logout of '+computer+'!\nThis is a friendly reminder that you should probably do that next time.'
 
 
@@ -79,7 +80,7 @@ def setupDrive():
         setupMessage()
     if not selectedDrive in driveArray:
         print('Specified drive not found. Please try again.')
-        sleep(0.5)
+        sleep(1)
         setupDrive()
     else:
         confirmDrive()
@@ -87,7 +88,7 @@ def setupDrive():
 def confirmDrive():
     display()
     print('Selected Drive: '+selectedDrive)
-    time.sleep(1)
+    time.sleep(0.5)
     confirm=input(str('Confirm? [Y/n] ')).upper()
     if confirm=='Y':
         confirmWrite()
@@ -128,14 +129,15 @@ def commitWrite():
     start=time.time() #take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
         i=i+1
-        filename='READ_ME ['+str(rand)+'] [#'+str(i)+'].txt'
         try:
+            filename='READ_ME ['+str(rand)+'] [#'+str(i)+'].txt'
             f=open(str(x)+'\\'+filename, 'w')
             f.write(msg+removalMsg)
             f.close()
             print(str(i)+'. '+str(x))
         except:
-            print(str(i)+'. [FAILED] '+str(x))
+            i=i-1
+            print('[FAILED] '+str(x))
     
     global taken
     taken=time.time()-start #calculate how long the operation took
