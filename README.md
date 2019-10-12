@@ -19,6 +19,7 @@ Requirements:
 - Run this script from a usb (optional)
 - Python 3.5+ (On the USB* or on the target machine)
 - Windows 10
+
 *If you are planning to use a python install from the USB, please create a shortcut to run the script using Python on the USB
 
 ![Final Confirmation](https://imgur.com/PPMd3Mv.png)
