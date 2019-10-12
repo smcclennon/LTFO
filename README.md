@@ -16,6 +16,7 @@ The text file includes easy to follow instructions to remove all of the files cr
 View [Logout Reminder Releases](https://github.com/smcclennon/Logout-Reminder/releases)
 # Installation
 - Run the script (preferably from a USB)
+
 Requirements:
 - Python 3.5+ (On a USB* or on the target machine)
 - Windows 10
