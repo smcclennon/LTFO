@@ -12,6 +12,7 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Choose which drive to flood with files
 - Ability to go back to the previous setting by pressing enter (enter blank)
 - Final randomly-generated confirmation code to prevent accidents
+- **Generate removal/cleanup script to automatically remove all files generated**
 
 View [Logout Reminder Releases](https://github.com/smcclennon/Logout-Reminder/releases)
 # Installation
@@ -26,6 +27,9 @@ Requirements:
 # Screenshots
 ![Final Confirmation](https://imgur.com/PPMd3Mv.png)
 ![File Creation](https://i.imgur.com/2hwxeuN.png)
-![Generated Text File](https://imgur.com/Sfxc1cY.png)
+![Generated Text File](https://i.imgur.com/fKlbsDP.png)
+
+Auto-generated Removal Tool
+![Removal Tool](https://i.imgur.com/1Ke52fA.png)
 
 Written in Python 3.7.4 on Windows 10
