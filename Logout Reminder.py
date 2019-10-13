@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-build=3
+build=4
 
 
 print('Importing requirements...')
@@ -122,9 +122,11 @@ def commitWrite():
     if confirm!=str(rand):
         confirmWrite()
     removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScriptP1='#Logout Reminder: Removal Script\n#github.com/smcclennon/Logout-Reminder\nBuild='+str(build)+'\nrand='+str(rand)
+    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nBuild='+str(build)+'\nrand='+str(rand)
     removalScriptP2='''
 import os,glob
+from ctypes import windll
+windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - Build '+str(build))
 y=str(os.getcwd()[0].upper())
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
@@ -132,23 +134,26 @@ i=0
 for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+filenameEstimate+'**.txt'):
     try:
         os.remove(str(x))
+        i=i+1
         print(str(i)+'. Deleted: '+str(x))
     except OSError:
         print('[FAILED]: '+str(x))
-    i=i+1
 for x in glob.glob(str(os.getcwd()[0].upper())+':\\**\\**'+filenameEstimate+'**.txt'):
     try:
         os.remove(str(x))
+        i=i+1
         print(str(i)+'. Deleted: '+str(x))
     except OSError:
         print('[FAILED]: '+str(x))
-    i=i+1
 for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+scriptnameEstimate+'**.py'):
     try:
         os.remove(str(x))
+        i=i+1
         print(str(i)+'. Deleted: '+str(x))
     except OSError:
-        print('[FAILED]: '+str(x))'''
+        print('[FAILED]: '+str(x))
+print('\n\nFile cleanup complete!')
+os.system('timeout 3')'''
     
     global i
     global start
