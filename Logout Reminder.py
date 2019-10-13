@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-build=2
+build=3
 
 
 print('Importing requirements...')
@@ -121,23 +121,62 @@ def commitWrite():
     confirm=input(str('\n>>> '))
     if confirm!=str(rand):
         confirmWrite()
-    removalMsg='\n\n\n\nInstructions to remove the files:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
+    removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
+    removalScriptP1='#Logout Reminder: Removal Script\n#github.com/smcclennon/Logout-Reminder\nBuild='+str(build)+'\nrand='+str(rand)
+    removalScriptP2='''
+import os,glob
+y=str(os.getcwd()[0].upper())
+filenameEstimate='READ_ME ['+str(rand)
+scriptnameEstimate='Removal Tool ['+str(rand)
+i=0
+for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+filenameEstimate+'**.txt'):
+    try:
+        os.remove(str(x))
+        print(str(i)+'. Deleted: '+str(x))
+    except OSError:
+        print('[FAILED]: '+str(x))
+    i=i+1
+for x in glob.glob(str(os.getcwd()[0].upper())+':\\**\\**'+filenameEstimate+'**.txt'):
+    try:
+        os.remove(str(x))
+        print(str(i)+'. Deleted: '+str(x))
+    except OSError:
+        print('[FAILED]: '+str(x))
+    i=i+1
+for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+scriptnameEstimate+'**.py'):
+    try:
+        os.remove(str(x))
+        print(str(i)+'. Deleted: '+str(x))
+    except OSError:
+        print('[FAILED]: '+str(x))'''
+    
     global i
     global start
     i=0
     print('\nCreating files...')
     start=time.time() #take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
-        i=i+1
+        if i==0:
+            try:
+                filename='Removal Tool ['+str(rand)+'].py'
+                f=open(str(x)+'\\'+filename, 'w')
+                f.write(removalScriptP1)
+                f.write(removalScriptP2)
+                i=i+1
+                print(str(i)+'. Created: '+str(x)+'\\'+filename)
+                f.close()
+            except:
+                print('[FAILED: REMOVAL SCRIPT]: '+str(x)+'\\'+filename)
+                print('***Failed to create removal script!***')
         try:
             filename='READ_ME ['+str(rand)+'] [#'+str(i)+'].txt'
             f=open(str(x)+'\\'+filename, 'w')
             f.write(msg+removalMsg)
             f.close()
-            print(str(i)+'. '+str(x))
+            i=i+1
+            print(str(i)+'. Created: '+str(x)+'\\'+filename)
         except:
-            i=i-1
-            print('[FAILED] '+str(x))
+            print('[FAILED]: '+str(x)+'\\'+filename)
     
     global taken
     taken=time.time()-start #calculate how long the operation took
