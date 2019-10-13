@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-build=4
+ver='2.0.1'
 
 
 print('Importing requirements...')
@@ -9,7 +9,7 @@ from ctypes import windll
 from random import randint
 from pathlib import Path
 
-windll.kernel32.SetConsoleTitleW('Logout Reminder - Build '+str(build)) #Set console window title
+windll.kernel32.SetConsoleTitleW('Logout Reminder - v'+str(ver)) #Set console window title
 
 def cmd(x):
     os.system(str(x))
@@ -23,7 +23,7 @@ def asciiRaw():
  | |___| (_) | (_| | (_) | |_| | |_  | | \ \  __/ | | | | | | | | | (_| |  __/ |
  |______\___/ \__, |\___/ \__,_|\__| |_|  \_\___|_| |_| |_|_|_| |_|\__,_|\___|_|
                __/ |''')
-    print('              |___/                                                    Build '+str(build)+'\n')
+    print('              |___/                                                    v'+str(ver)+'\n')
 def display():
     cmd('cls')
     asciiRaw()
@@ -122,11 +122,11 @@ def commitWrite():
     if confirm!=str(rand):
         confirmWrite()
     removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nBuild='+str(build)+'\nrand='+str(rand)
+    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)
     removalScriptP2='''
 import os,glob
 from ctypes import windll
-windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - Build '+str(build))
+windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - v'+str(ver))
 y=str(os.getcwd()[0].upper())
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
