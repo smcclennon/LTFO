@@ -1,15 +1,22 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.0.1'
+ver='2.2.0'
 
 
 print('Importing requirements...')
-import time,string,os,socket,getpass
-from ctypes import windll
-from random import randint
-from pathlib import Path
+try:
+    import time,string,os,socket,getpass,urllib.request,json
+    from ctypes import windll
+    from random import randint
+    from pathlib import Path
+except:
+    print('Error: one or more libraries could not be imported!')
+    print('Visit github.com/smcclennon/Logout-Reminder for support\n\nPress enter to exit...')
+    input()
+    exit()
 
 windll.kernel32.SetConsoleTitleW('Logout Reminder - v'+str(ver)) #Set console window title
+
 
 def cmd(x):
     os.system(str(x))
@@ -39,6 +46,33 @@ for letter in string.ascii_uppercase:
 #You can customise this!
 defaultMsg='You forgot to logout of '+computer+'!\nThis is a friendly reminder that you should probably do that next time.'
 
+def update():
+    display()
+    print('Checking for updates...')
+    try: #remove previous version if just updated
+        with open('Logout_Reminder.tmp', 'r') as content_file:
+            os.remove(str(content_file.read()))
+        os.remove('Logout_Reminder.tmp')
+    except:
+        pass
+    try: #Get latest version number (2.0.0)
+        with urllib.request.urlopen("https://api.github.com/repos/smcclennon/Logout-Reminder/releases/latest") as url:
+            data = json.loads(url.read().decode())
+            latest=data['tag_name'][1:]
+    except:
+        latest='0'
+    if latest>ver:
+        print('\nUpdate available!')
+        print('Latest Version: v'+latest)
+        confirm=input(str('Update now? [Y/n] ')).upper()
+        if confirm=='Y':
+            latestFilename='Logout_Reminder v'+str(latest)+'.py'
+            print('Downloading '+latestFilename+'...') #Download latest version to cwd
+            urllib.request.urlretrieve('https://github.com/smcclennon/Logout-Reminder/releases/latest/download/Logout_Reminder.py', latestFilename)
+            f=open('Logout_Reminder.tmp', 'w') #write the current filename to Logout_Reminder.tmp
+            f.write(str(os.path.basename(__file__)))
+            f.close()
+            exec(open(latestFilename)).read() #open latest version
 
 def setupMessage():
     display()
@@ -187,6 +221,7 @@ os.system('timeout 3')'''
     taken=time.time()-start #calculate how long the operation took
 
 #Run the script
+update() #check for updates
 setupMessage() #Start at the setupMessage module
 print('\n')
 asciiRaw()
