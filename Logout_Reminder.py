@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.1.3'
+ver='2.1.4'
 
 
 print('Importing requirements...')
@@ -59,11 +59,13 @@ def update():
         with urllib.request.urlopen("https://api.github.com/repos/smcclennon/Logout-Reminder/releases/latest") as url:
             data = json.loads(url.read().decode())
             latest=data['tag_name'][1:]
+            patchNotes=data['body']
     except:
         latest='0'
     if latest>ver:
         print('\nUpdate available!')
         print('Latest Version: v'+latest)
+        print('\n'+str(patchNotes)+'\n')
         confirm=input(str('Update now? [Y/n] ')).upper()
         if confirm=='Y':
             latestFilename='Logout_Reminder v'+str(latest)+'.py'
