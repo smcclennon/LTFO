@@ -5,6 +5,7 @@ This script will place a text file with a message of your choice within every fo
 The text file includes easy to follow instructions to remove all of the files created by this script.
 
 # Features
+- Automatic updates
 - Place a text file in all subdirectories of a specific drive to help remind your colleagues to logout next time
 - View the computer name
 - View the logged-in username
@@ -13,7 +14,6 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Ability to go back to the previous setting by pressing enter (enter blank)
 - Final randomly-generated confirmation code to prevent accidents
 - **Generate removal/cleanup script to automatically remove all files generated**
-- Automatic updates
 
 View [Logout Reminder Releases](https://github.com/smcclennon/Logout-Reminder/releases)
 # Installation
