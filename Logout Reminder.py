@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.1.1' #beta
+ver='2.1.2'
 
 
 print('Importing requirements...')
@@ -156,39 +156,34 @@ def commitWrite():
     if confirm!=str(rand):
         confirmWrite()
     removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)
+    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"
     removalScriptP2='''
 import os,glob
 from ctypes import windll
+from pathlib import Path
 windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - v'+str(ver))
 y=str(os.getcwd()[0].upper())
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
 i=0
-for x in glob.glob(str(os.getcwd()[0].upper())+':**\\**'+filenameEstimate+'**.txt'):
-    try:
-        os.remove(str(x))
-        i=i+1
-        print(str(i)+'. Deleted: '+str(x))
-    except OSError:
-        print('[FAILED]: '+str(x))
-for x in glob.glob(str(os.getcwd()[0].upper())+':\\**\\**'+filenameEstimate+'**.txt'):
-    try:
-        os.remove(str(x))
-        i=i+1
-        print(str(i)+'. Deleted: '+str(x))
-    except OSError:
-        print('[FAILED]: '+str(x))
-for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+scriptnameEstimate+'**.py'):
-    try:
-        os.remove(str(x))
-        i=i+1
-        print(str(i)+'. Deleted: '+str(x))
-    except OSError:
-        print('[FAILED]: '+str(x))
+for x in Path(selectedDrive+':/').glob('**'):
+        try:
+            i=i+1
+            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*.txt', recursive=True):
+                    os.remove(y)
+                    print(str(i)+'. Deleted: '+str(y))
+        except:
+            print('[FAILED]: '+str(x))
+try:
+    i=i+1
+    for y in glob.glob(str(selectedDrive)+':\\\\'+scriptnameEstimate+'*.py', recursive=True):
+            os.remove(y)
+            print(str(i)+'. Deleted: '+str(y))
+except:
+    print('[FAILED]: '+str(x))
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
-    
+
     global i
     global start
     i=0
