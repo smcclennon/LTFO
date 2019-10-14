@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.2.0'
+ver='2.1.0'
 
 
 print('Importing requirements...')
