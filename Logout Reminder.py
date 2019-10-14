@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.1.0'
+ver='2.1.1'
 
 
 print('Importing requirements...')
@@ -165,7 +165,7 @@ y=str(os.getcwd()[0].upper())
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
 i=0
-for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+filenameEstimate+'**.txt'):
+for x in glob.glob(str(os.getcwd()[0].upper())+':**\\**'+filenameEstimate+'**.txt'):
     try:
         os.remove(str(x))
         i=i+1
@@ -186,7 +186,7 @@ for x in glob.glob(str(os.getcwd()[0].upper())+':\\*'+scriptnameEstimate+'**.py'
         print(str(i)+'. Deleted: '+str(x))
     except OSError:
         print('[FAILED]: '+str(x))
-print('\n\nFile cleanup complete!')
+print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
     
     global i
