@@ -13,6 +13,7 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Ability to go back to the previous setting by pressing enter (enter blank)
 - Final randomly-generated confirmation code to prevent accidents
 - **Generate removal/cleanup script to automatically remove all files generated**
+- Automatic updates
 
 View [Logout Reminder Releases](https://github.com/smcclennon/Logout-Reminder/releases)
 # Installation
