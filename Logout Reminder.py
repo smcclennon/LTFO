@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.1.2'
+ver='2.1.3'
 
 
 print('Importing requirements...')
@@ -72,7 +72,8 @@ def update():
             f=open('Logout_Reminder.tmp', 'w') #write the current filename to Logout_Reminder.tmp
             f.write(str(os.path.basename(__file__)))
             f.close()
-            exec(open(latestFilename)).read() #open latest version
+            os.system('"'+latestFilename+'"') #open latest version
+            exit()
 
 def setupMessage():
     display()
