@@ -1,6 +1,6 @@
 #Logout Reminder
 #github.com/smcclennon/Logout-Reminder
-ver='2.1.4'
+ver='2.1.6'
 
 
 print('Importing requirements...')
@@ -34,14 +34,10 @@ def asciiRaw():
 def display():
     cmd('cls')
     asciiRaw()
+global confirm
 computer=str(socket.gethostname())
 username=str(getpass.getuser())
-driveArray = [] #Search for drives
-bitmask = windll.kernel32.GetLogicalDrives()
-for letter in string.ascii_uppercase:
-    if bitmask & 1:
-        driveArray.append(letter)
-    bitmask >>= 1
+
 
 #You can customise this!
 defaultMsg='You forgot to logout of '+computer+'!\nThis is a friendly reminder that you should probably do that next time.'
@@ -105,6 +101,12 @@ def confirmMessage():
 
 def setupDrive():
     display()
+    driveArray = [] #Search for drives
+    bitmask = windll.kernel32.GetLogicalDrives()
+    for letter in string.ascii_uppercase:
+        if bitmask & 1:
+            driveArray.append(letter)
+        bitmask >>= 1
     print('Available Drives:')
     i=0
     for x in driveArray:
@@ -152,20 +154,25 @@ def confirmWrite():
         setupDrive()
 
 def commitWrite():
+    global rand
     rand=randint(10000,99999) #Create a random number for confirmation and filenames
     display()
     print('\nSelected Drive: '+selectedDrive+'\n\nTo begin flooding, please type this confirmation code: '+str(rand))
-    confirm=input(str('\n>>> '))
-    if confirm!=str(rand):
+    confirm=input('\n>>> ')
+    try:
+        confirm=int(confirm)
+    except:
         confirmWrite()
+    if confirm!=int(rand):
+        del rand
+        confirmWrite()
+        
     removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScriptP1='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"
-    removalScriptP2='''
+    removalScript='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"+'''
 import os,glob
 from ctypes import windll
 from pathlib import Path
 windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - v'+str(ver))
-y=str(os.getcwd()[0].upper())
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
 i=0
@@ -197,11 +204,10 @@ os.system('timeout 3')'''
             try:
                 filename='Removal Tool ['+str(rand)+'].py'
                 f=open(str(x)+'\\'+filename, 'w')
-                f.write(removalScriptP1)
-                f.write(removalScriptP2)
+                f.write(removalScript)
+                f.close()
                 i=i+1
                 print(str(i)+'. Created: '+str(x)+'\\'+filename)
-                f.close()
             except:
                 print('[FAILED: REMOVAL SCRIPT]: '+str(x)+'\\'+filename)
                 print('***Failed to create removal script!***')
@@ -214,14 +220,15 @@ os.system('timeout 3')'''
             print(str(i)+'. Created: '+str(x)+'\\'+filename)
         except:
             print('[FAILED]: '+str(x)+'\\'+filename)
-    
     global taken
     taken=time.time()-start #calculate how long the operation took
+    print('\n')
+    asciiRaw()
+    print('Created '+str(i)+' files in '+str(round(taken, 2))+' seconds!\nPress any key to exit...')
+    cmd('pause>nul')
+    exit()
 
 #Run the script
 update() #check for updates
 setupMessage() #Start at the setupMessage module
-print('\n')
-asciiRaw()
-print('Created '+str(i)+' files in '+str(round(taken, 2))+' seconds!\nPress any key to exit...')
-cmd('pause>nul')
+
