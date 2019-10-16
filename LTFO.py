@@ -1,6 +1,6 @@
-#Logout Reminder
-#github.com/smcclennon/Logout-Reminder
-ver='2.1.6'
+#Log TF Out
+#github.com/smcclennon/LTFO
+ver='3.0.0'
 
 
 print('Importing requirements...')
@@ -11,11 +11,11 @@ try:
     from pathlib import Path
 except:
     print('Error: one or more libraries could not be imported!')
-    print('Visit github.com/smcclennon/Logout-Reminder for support\n\nPress enter to exit...')
+    print('Visit github.com/smcclennon/LTFO for support\n\nPress enter to exit...')
     input()
     exit()
 
-windll.kernel32.SetConsoleTitleW('Logout Reminder - v'+str(ver)) #Set console window title
+windll.kernel32.SetConsoleTitleW('LTFO - v'+str(ver)) #Set console window title
 
 
 def cmd(x):
@@ -23,14 +23,12 @@ def cmd(x):
 def sleep(x):
     time.sleep(x)
 def asciiRaw():
-    print('''  _                             _     _____                _           _
- | |                           | |   |  __ \              (_)         | |
- | |     ___   __ _  ___  _   _| |_  | |__) |___ _ __ ___  _ _ __   __| | ___ _ __
- | |    / _ \ / _` |/ _ \| | | | __| |  _  // _ \ '_ ` _ \| | '_ \ / _` |/ _ \ '__|
- | |___| (_) | (_| | (_) | |_| | |_  | | \ \  __/ | | | | | | | | | (_| |  __/ |
- |______\___/ \__, |\___/ \__,_|\__| |_|  \_\___|_| |_| |_|_|_| |_|\__,_|\___|_|
-               __/ |''')
-    print('              |___/                                                    v'+str(ver)+'\n')
+    print('''██╗  ████████╗███████╗ ██████╗ 
+██║  ╚══██╔══╝██╔════╝██╔═══██╗
+██║     ██║   █████╗  ██║   ██║  v'''+str(ver)+'''
+██║     ██║   ██╔══╝  ██║   ██║
+███████╗██║   ██║     ╚██████╔╝
+╚══════╝╚═╝   ╚═╝      ╚═════╝''')
 def display():
     cmd('cls')
     asciiRaw()
@@ -46,13 +44,13 @@ def update():
     display()
     print('Checking for updates...')
     try: #remove previous version if just updated
-        with open('Logout_Reminder.tmp', 'r') as content_file:
+        with open('LTFO.tmp', 'r') as content_file:
             os.remove(str(content_file.read()))
-        os.remove('Logout_Reminder.tmp')
+        os.remove('LTFO.tmp')
     except:
         pass
     try: #Get latest version number (2.0.0)
-        with urllib.request.urlopen("https://api.github.com/repos/smcclennon/Logout-Reminder/releases/latest") as url:
+        with urllib.request.urlopen("https://api.github.com/repos/smcclennon/LTFO/releases/latest") as url:
             data = json.loads(url.read().decode())
             latest=data['tag_name'][1:]
             patchNotes=data['body']
@@ -64,10 +62,10 @@ def update():
         print('\n'+str(patchNotes)+'\n')
         confirm=input(str('Update now? [Y/n] ')).upper()
         if confirm=='Y':
-            latestFilename='Logout_Reminder v'+str(latest)+'.py'
+            latestFilename='LTFO v'+str(latest)+'.py'
             print('Downloading '+latestFilename+'...') #Download latest version to cwd
-            urllib.request.urlretrieve('https://github.com/smcclennon/Logout-Reminder/releases/latest/download/Logout_Reminder.py', latestFilename)
-            f=open('Logout_Reminder.tmp', 'w') #write the current filename to Logout_Reminder.tmp
+            urllib.request.urlretrieve('https://github.com/smcclennon/LTFO/releases/latest/download/LTFO.py', latestFilename)
+            f=open('LTFO.tmp', 'w') #write the current filename to LTFO.tmp
             f.write(str(os.path.basename(__file__)))
             f.close()
             os.system('"'+latestFilename+'"') #open latest version
@@ -168,11 +166,11 @@ def commitWrite():
         confirmWrite()
         
     removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScript='#Logout Reminder: Removal Tool\n#github.com/smcclennon/Logout-Reminder\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"+'''
+    removalScript='#LTFO: Removal Tool\n#github.com/smcclennon/LTFO\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"+'''
 import os,glob
 from ctypes import windll
 from pathlib import Path
-windll.kernel32.SetConsoleTitleW('Logout Reminder: Removal Tool - v'+str(ver))
+windll.kernel32.SetConsoleTitleW('LTFO: Removal Tool - v'+str(ver))
 filenameEstimate='READ_ME ['+str(rand)
 scriptnameEstimate='Removal Tool ['+str(rand)
 i=0
