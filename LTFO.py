@@ -1,6 +1,6 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='3.0.0'
+ver='3.0.1'
 
 
 print('Importing requirements...')
@@ -50,7 +50,10 @@ def update():
     except:
         pass
     try: #Get latest version number (2.0.0)
-        with urllib.request.urlopen("https://api.github.com/repos/smcclennon/LTFO/releases/latest") as url:
+        with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
+            global repo
+            repo=str(url.read().decode())
+        with urllib.request.urlopen(repo) as url:
             data = json.loads(url.read().decode())
             latest=data['tag_name'][1:]
             patchNotes=data['body']
