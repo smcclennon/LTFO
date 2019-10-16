@@ -1,6 +1,7 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='3.0.1'
+ver='3.0.2'
+proj='LTFO'
 
 
 print('Importing requirements...')
@@ -15,7 +16,7 @@ except:
     input()
     exit()
 
-windll.kernel32.SetConsoleTitleW('LTFO - v'+str(ver)) #Set console window title
+windll.kernel32.SetConsoleTitleW(proj+' - v'+str(ver)) #Set console window title
 
 
 def cmd(x):
@@ -44,16 +45,21 @@ def update():
     display()
     print('Checking for updates...')
     try: #remove previous version if just updated
-        with open('LTFO.tmp', 'r') as content_file:
+        with open(proj+'.tmp', 'r') as content_file:
             os.remove(str(content_file.read()))
-        os.remove('LTFO.tmp')
+        os.remove(proj+'.tmp')
     except:
         pass
     try: #Get latest version number (2.0.0)
         with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
             global repo
-            repo=str(url.read().decode())
-        with urllib.request.urlopen(repo) as url:
+            repo=[]
+            for line in url.readlines():
+                repo.append(line.decode().strip())
+            api=repo[0] #latest release details
+            proj=repo[1] #project name
+            ddl=repo[2] #direct download
+        with urllib.request.urlopen(api) as url:
             data = json.loads(url.read().decode())
             latest=data['tag_name'][1:]
             patchNotes=data['body']
@@ -65,10 +71,10 @@ def update():
         print('\n'+str(patchNotes)+'\n')
         confirm=input(str('Update now? [Y/n] ')).upper()
         if confirm=='Y':
-            latestFilename='LTFO v'+str(latest)+'.py'
+            latestFilename=proj+' v'+str(latest)+'.py'
             print('Downloading '+latestFilename+'...') #Download latest version to cwd
-            urllib.request.urlretrieve('https://github.com/smcclennon/LTFO/releases/latest/download/LTFO.py', latestFilename)
-            f=open('LTFO.tmp', 'w') #write the current filename to LTFO.tmp
+            urllib.request.urlretrieve(ddl, latestFilename)
+            f=open(proj+'.tmp', 'w') #write the current filename to LTFO.tmp
             f.write(str(os.path.basename(__file__)))
             f.close()
             os.system('"'+latestFilename+'"') #open latest version
