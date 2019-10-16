@@ -1,4 +1,4 @@
-# Logout Reminder
+# Log TF Out
 A python script that allows you to remind your colleagues to logout next time.
 
 This script will place a text file with a message of your choice within every folder (directory) on the selected drive of your choice.
@@ -15,7 +15,7 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Final randomly-generated confirmation code to prevent accidents
 - **Generate removal/cleanup script to automatically remove all files generated**
 
-View [Logout Reminder Releases](https://github.com/smcclennon/Logout-Reminder/releases)
+View [LTFO Releases](https://github.com/smcclennon/LTFO/releases)
 # Installation
 - Run the script (preferably from a USB)
 
