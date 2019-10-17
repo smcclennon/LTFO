@@ -1,6 +1,6 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='3.0.2'
+ver='3.0.3'
 proj='LTFO'
 
 
@@ -42,29 +42,34 @@ username=str(getpass.getuser())
 defaultMsg='You forgot to logout of '+computer+'!\nThis is a friendly reminder that you should probably do that next time.'
 
 def update():
+    updateAttempt=0
     display()
     print('Checking for updates...')
     try: #remove previous version if just updated
+        global proj
         with open(proj+'.tmp', 'r') as content_file:
             os.remove(str(content_file.read()))
         os.remove(proj+'.tmp')
     except:
         pass
-    try: #Get latest version number (2.0.0)
-        with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
-            global repo
-            repo=[]
-            for line in url.readlines():
-                repo.append(line.decode().strip())
-            api=repo[0] #latest release details
-            proj=repo[1] #project name
-            ddl=repo[2] #direct download
-        with urllib.request.urlopen(api) as url:
-            data = json.loads(url.read().decode())
-            latest=data['tag_name'][1:]
-            patchNotes=data['body']
-    except:
-        latest='0'
+    while updateAttempt<3:
+        updateAttempt=updateAttempt+1
+        try: #Get latest version number (2.0.0)
+            with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
+                global repo
+                repo=[]
+                for line in url.readlines():
+                    repo.append(line.decode().strip())
+                api=repo[0] #latest release details
+                proj=repo[1] #project name
+                ddl=repo[2] #direct download
+            with urllib.request.urlopen(api) as url:
+                data = json.loads(url.read().decode())
+                latest=data['tag_name'][1:]
+                patchNotes=data['body']
+            updateAttempt=3
+        except:
+            latest='0'
     if latest>ver:
         print('\nUpdate available!')
         print('Latest Version: v'+latest)
