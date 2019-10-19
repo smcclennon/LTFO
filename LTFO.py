@@ -17,7 +17,7 @@ except:
     input()
     exit()
 
-windll.kernel32.SetConsoleTitleW(f'{proj} - v {ver})') #Set console window title
+windll.kernel32.SetConsoleTitleW(f'{proj} - v {ver}') #Set console window title
 
 # Run a specific command
 def cmd(x):
@@ -43,10 +43,10 @@ def display():
 
 def confirmChoice():
     while True:
-        choice = input('Confirm? [Y/n]\n').upper()
+        choice = input('Confirm? [Y/n] ').upper()
         if choice == "" or choice == "Y":
             return True
-        elif choice == "N":
+        else:
             return False
 
 computer=str(socket.gethostname())
