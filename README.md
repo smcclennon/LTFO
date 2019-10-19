@@ -16,8 +16,8 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Final randomly-generated confirmation code to prevent accidents
 - Generate removal/cleanup script to automatically remove all files generated
 ```
-
-View [LTFO Releases](https://github.com/smcclennon/LTFO/releases)
+<a href="https://github.com/smcclennon/LTFO/releases/latest/download/LTFO.py"><img src="https://i.imgur.com/lJiicll.png">
+  
 # Installation
 `- Run the script (preferably from a USB)`
 
@@ -45,3 +45,5 @@ Auto-generated Removal Tool
 ```
 
 Written in Python 3.7.4 on Windows 10
+
+<a href="https://www.freepik.com/free-photos-vectors/menu">Menu vector created by freepik - www.freepik.com</a>
