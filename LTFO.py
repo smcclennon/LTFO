@@ -116,7 +116,12 @@ def setupMessage():
     print('Username: {username}'.format(**variables))
     print('\nVariables: {computer}, {username}, {nl}')
     print('Enter your custom message. Leave blank to use the default message.')
-    customMessage = input(f'> ').format(**variables)
+    try:
+        customMessage = input('\n> ').format(**variables)
+    except:
+        print('Invalid variable. Please try again.')
+        sleep(1)
+        setupMessage()
     options['message'] = customMessage
     confirmMessage()
 
