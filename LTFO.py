@@ -1,6 +1,6 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='3.0.3'
+ver='3.1.0'
 proj='LTFO'
 
 print('Importing requirements...')
@@ -29,9 +29,9 @@ def sleep(x):
 
 # Print the logo
 def asciiRaw():
-    print('''██╗  ████████╗███████╗ ██████╗
+    print(f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
-██║     ██║   █████╗  ██║   ██║  v'''+str(ver)+'''
+██║     ██║   █████╗  ██║   ██║  v{ver}
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝''')
@@ -49,11 +49,12 @@ def confirmChoice():
         else:
             return False
 
-computer=str(socket.gethostname())
-username = str(getpass.getuser())
+computer=str(socket.gethostname()) #Computers name
+username = str(getpass.getuser()) #Current logged in username
 
 
 #You can customise this!
+#variables: {computer}, {username}
 defaultMsg=f'You forgot to logout of {computer}!\nThis is a friendly reminder that you should probably do that next time.'
 
 options = {
@@ -231,7 +232,7 @@ os.system('timeout 3')'''
     start=time.time() #take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
         if i==0:
-            try:
+            try: #Create the removal script
                 filename=f'Removal Tool [{rand}].py'
                 f=open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
@@ -241,7 +242,8 @@ os.system('timeout 3')'''
             except:
                 print(f'[FAILED: REMOVAL SCRIPT]: {x}\\{filename}')
                 print('***Failed to create removal script!***')
-        try:
+
+        try: #Create the READ_ME files
             filename= f'READ_ME [{rand}] [#{i}].txt'
             f=open(str(x)+'\\'+filename, 'w')
             msg = defaultMsg if customMsg == '' else customMsg
