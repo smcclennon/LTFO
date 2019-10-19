@@ -1,6 +1,6 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='3.1.0'
+ver='4.0.0'
 proj='LTFO'
 
 print('Importing requirements...')
@@ -49,19 +49,22 @@ def confirmChoice():
         else:
             return False
 
-computer=str(socket.gethostname()) #Computers name
-username = str(getpass.getuser()) #Current logged in username
-
-
-#You can customise this!
-#variables: {computer}, {username}
-defaultMsg=f'You forgot to logout of {computer}!\nThis is a friendly reminder that you should probably do that next time.'
-
-options = {
-    'message': False,
-    'drive': False,
-    'confirmCode': 0
+#store variables for calling in custom messages
+variables = {
+    'computer': socket.gethostname(),
+    'username': getpass.getuser(),
+    'nl': '\n'
 }
+options = {
+    'message': '', #store custom message if one is created
+    'drive': ''
+}
+
+
+defaultMsg='You forgot to logout of {computer}!\nThis is a friendly reminder that you should probably do that next time.'.format(**variables)
+
+
+
 
 def update():
     updateAttempt=0
@@ -108,11 +111,11 @@ def update():
 
 def setupMessage():
     display()
-    print(f'Computer: {computer}')
-    print(f'Username: {username}')
-    print('\nEnter your custom message. Leave blank to use the default message.')
-
-    customMessage = input('> ')
+    print('Computer: {computer}'.format(**variables))
+    print('Username: {username}'.format(**variables))
+    print('\nVariables: {computer}, {username}, {nl}')
+    print('Enter your custom message. Leave blank to use the default message.')
+    customMessage = input(f'> ').format(**variables)
     options['message'] = customMessage
     confirmMessage()
 
@@ -167,8 +170,8 @@ def confirmWrite():
     customMsg = options['message']
     selectedDrive = options['drive']
 
-    print('Computer: '+computer)
-    print('Username: ' + username)
+    print('Computer: {computer}'.format(**variables))
+    print('Username: {username}'.format(**variables))
 
     print(f'Selected Drive: {options["drive"]}')
 
