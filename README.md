@@ -4,6 +4,8 @@ A python script that allows you to remind your colleagues to logout next time.
 This script will place a text file with a message of your choice within every folder (directory) on the selected drive of your choice.
 The text file includes easy to follow instructions to remove all of the files created by this script.
 
+<a href="https://github.com/smcclennon/LTFO/releases/latest/download/LTFO.py"><img src="https://smcclennon.github.io/update/download.png">
+  
 # Features
 ```
 - Automatic updates
@@ -16,7 +18,6 @@ The text file includes easy to follow instructions to remove all of the files cr
 - Final randomly-generated confirmation code to prevent accidents
 - Generate removal/cleanup script to automatically remove all files generated
 ```
-<a href="https://github.com/smcclennon/LTFO/releases/latest/download/LTFO.py"><img src="https://smcclennon.github.io/update/download.png">
   
 # Installation
 `- Run the script (preferably from a USB)`
@@ -40,7 +41,7 @@ Auto-generated Removal Tool
 
 # Todo
 ```
-- Specify a specific file to flood a drive with (as a customMsg {variable})
+- Specify a specific file to flood a drive with (as a customMsg {/path/to/file})
 - Display all patch notes between your version and the latest version when an update is available
 ```
 

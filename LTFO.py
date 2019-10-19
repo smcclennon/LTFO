@@ -73,8 +73,9 @@ def update():
     try: #remove previous version if just updated
         global proj
         with open(proj+'.tmp', 'r') as content_file:
-            if content_file.read() != os.path.basename(__file__): #if the old version has the current filename, don't delete
-                os.remove(str(content_file.read()))
+            oldFile=str(content_file.read())
+            if oldFile != os.path.basename(__file__): #if the old version has the current filename, don't delete
+                os.remove(oldFile)
         os.remove(proj+'.tmp')
     except:
         pass
