@@ -1,6 +1,6 @@
 #Log TF Out
 #github.com/smcclennon/LTFO
-ver='4.0.0'
+ver='4.0.1'
 proj='LTFO'
 
 print('Importing requirements...')
@@ -101,7 +101,7 @@ def update():
         print('Latest Version: v'+latest)
         print('\n'+str(patchNotes)+'\n')
         confirm=input(str('Update now? [Y/n] ')).upper()
-        if confirm=='Y':
+        if confirm=='' or confirm=='Y':
             latestFilename=proj+' v'+str(latest)+'.py'
             print(f'Downloading {latestFilename}...') #Download latest version to cwd
             urllib.request.urlretrieve(ddl, latestFilename)
