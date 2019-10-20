@@ -1,12 +1,13 @@
-#Log TF Out
-#github.com/smcclennon/LTFO
-ver='4.0.1'
-proj='LTFO'
+# Log TF Out
+# github.com/smcclennon/LTFO
+ver = '4.1.0'
+proj = 'LTFO'
+
 
 print('Importing requirements...')
 try:
     # Attempt to import requirements
-    import time,string,os,socket,getpass,urllib.request,json
+    import time, string, os, socket, getpass, urllib.request, json
     from ctypes import windll
     from random import randint
     from pathlib import Path
@@ -17,30 +18,40 @@ except:
     input()
     exit()
 
-windll.kernel32.SetConsoleTitleW(f'{proj} - v {ver}') #Set console window title
+
+# Set console window title
+windll.kernel32.SetConsoleTitleW(
+    f'{proj} - v{ver}')
+
 
 # Run a specific command
 def cmd(x):
     os.system(str(x))
 
+
 # Pause the program for a specified amount of time
 def sleep(x):
     time.sleep(x)
 
+
 # Print the logo
 def asciiRaw():
-    print(f'''██╗  ████████╗███████╗ ██████╗
+    print(f'''
+██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
 ██║     ██║   █████╗  ██║   ██║  v{ver}
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝''')
 
+
 # Clear the display
 def display():
     cmd('cls')
     asciiRaw()
 
+
+# Prompt the user to choose what to do
 def confirmChoice():
     while True:
         choice = input('Confirm? [Y/n] ').upper()
@@ -49,67 +60,71 @@ def confirmChoice():
         else:
             return False
 
-#store variables for calling in custom messages
+
+# Store variables for calling in custom messages
 variables = {
     'computer': socket.gethostname(),
     'username': getpass.getuser(),
     'nl': '\n'
 }
 options = {
-    'message': '', #store custom message if one is created
+    'message': '',  # Store custom message if one is created
     'drive': ''
 }
 
 
-defaultMsg='You forgot to logout of {computer}!\nThis is a friendly reminder that you should probably do that next time.'.format(**variables)
-
-
+defaultMsg = '''You forgot to logout of {computer}!
+This is a friendly reminder that you should probably do that next time.'''.format(**variables)
 
 
 def update():
-    updateAttempt=0
+    updateAttempt = 0
     display()
     print('Checking for updates...')
-    try: #remove previous version if just updated
+    try:  # Remove previous version if just updated
         global proj
         with open(proj+'.tmp', 'r') as content_file:
-            oldFile=str(content_file.read())
-            if oldFile != os.path.basename(__file__): #if the old version has the current filename, don't delete
+            oldFile = str(content_file.read())
+            # If the old version has the current filename, don't delete
+            if oldFile != os.path.basename(__file__):
                 os.remove(oldFile)
         os.remove(proj+'.tmp')
     except:
         pass
-    while updateAttempt<3:
-        updateAttempt=updateAttempt+1
+    while updateAttempt < 3:
+        updateAttempt = updateAttempt+1
         try:
             with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
-                repo=[]
+                repo = []
                 for line in url.readlines():
                     repo.append(line.decode().strip())
-                api=repo[0] #latest release details
-                proj=repo[1] #project name
-                ddl=repo[2] #direct download
+                api = repo[0]  # Latest release details
+                proj = repo[1]  # Project name
+                ddl = repo[2]  # Direct download
             with urllib.request.urlopen(api) as url:
                 data = json.loads(url.read().decode())
-                latest=data['tag_name'][1:]
-                patchNotes=data['body']
-            updateAttempt=3
+                latest = data['tag_name'][1:]
+                patchNotes = data['body']
+            updateAttempt = 3
         except:
-            latest='0'
-    if latest>ver:
+            latest = '0'
+    if latest > ver:
         print('\nUpdate available!')
         print('Latest Version: v'+latest)
         print('\n'+str(patchNotes)+'\n')
-        confirm=input(str('Update now? [Y/n] ')).upper()
-        if confirm=='' or confirm=='Y':
-            latestFilename=proj+' v'+str(latest)+'.py'
-            print(f'Downloading {latestFilename}...') #Download latest version to cwd
+        confirm = input(str('Update now? [Y/n] ')).upper()
+        if confirm == '' or confirm == 'Y':
+            latestFilename = proj+' v'+str(latest)+'.py'
+            # Download latest version to cwd
+            print(f'Downloading {latestFilename}...')
             urllib.request.urlretrieve(ddl, latestFilename)
-            f=open(proj+'.tmp', 'w') #write the current filename to LTFO.tmp
+            # Write the current filename to LTFO.tmp
+            f = open(proj+'.tmp', 'w')
             f.write(str(os.path.basename(__file__)))
             f.close()
-            os.system('"'+latestFilename+'"') #open latest version
+            os.system('"'+latestFilename+'"')  # Open latest version
             exit()
+
 
 def setupMessage():
     display()
@@ -126,16 +141,19 @@ def setupMessage():
     options['message'] = customMessage
     confirmMessage()
 
+
 def confirmMessage():
     display()
     customMsg = options['message']
     print(f'Custom Message: {"Disabled" if customMsg == "" else "Enabled"}')
-    print(f'\n______ Message ______\n\n{defaultMsg if customMsg == "" else customMsg}\n\n______ Message ______\n')
+    print(
+        f'\n______ Message ______\n\n{defaultMsg if customMsg == "" else customMsg}\n\n______ Message ______\n')
     confirm = confirmChoice()
     if confirm:
         setupDrive()
     else:
         setupMessage()
+
 
 def setupDrive():
     display()
@@ -150,8 +168,8 @@ def setupDrive():
         print(f'{index + 1}. {drive}')
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
-    selectedDrive=input(str('> ')).upper()
-    if selectedDrive=='':
+    selectedDrive = input(str('> ')).upper()
+    if selectedDrive == '':
         setupMessage()
     if not selectedDrive in driveArray:
         print('Specified drive not found. Please try again.')
@@ -161,16 +179,18 @@ def setupDrive():
         options['drive'] = selectedDrive
         confirmDrive()
 
+
 def confirmDrive():
     display()
     selectedDrive = options['drive']
     print(f'Selected Drive: {selectedDrive}')
     time.sleep(0.5)
-    confirm=  confirmChoice()
+    confirm = confirmChoice()
     if confirm:
         confirmWrite()
     else:
         setupDrive()
+
 
 def confirmWrite():
     display()
@@ -194,30 +214,49 @@ def confirmWrite():
     else:
         setupDrive()
 
+
 def commitWrite():
     display()
 
-    rand=randint(10000,99999) #Create a random number for confirmation and filenames
+    # Create a random number for confirmation and filenames
+    rand = randint(10000, 99999)
     customMsg = options['message']
     selectedDrive = options['drive']
 
     print(f'\nSelected Drive: {selectedDrive}\n\nTo begin flooding, please enter the confirmation code {rand}.')
-    confirm=input('\n>>> ')
+    confirm = input('\n>>> ')
     try:
-        confirm=int(confirm)
+        confirm = int(confirm)
     except:
         confirmWrite()
-    if confirm!=rand:
+    if confirm != rand:
         confirmWrite()
 
-    removalMsg='\n\n\n\nInstructions to remove the files:\n\nAutomatic:\n1. Navigate to "'+selectedDrive+':\\"\n2. Run "Removal Tool ['+str(rand)+'].py"\n\nManual:\n1. Navigate to "'+selectedDrive+':\\"\n2. Search for "READ_ME ['+str(rand)+']"\n3. Select everything and delete'
-    removalScript='#LTFO: Removal Tool\n#github.com/smcclennon/LTFO\nver="'+str(ver)+'"\nrand='+str(rand)+"\nselectedDrive='"+str(selectedDrive)+"'"+'''
+    # Removal instructions written to all READ_ME files
+    removalMsg = f'''\n\n\n
+Instructions to remove the files:
+
+Automatic:
+1. Navigate to "{selectedDrive}:\\"
+2. Run "Removal Tool [{rand}].py"
+
+Manual:
+1. Navigate to "{selectedDrive}:\\"
+2. Search for "READ_ME [{rand}]"
+3. Select everything and delete'''
+
+    # Removal script created at the root of the selected drive
+    removalScript = f'''#{proj}: Removal Tool
+#github.com/smcclennon/LTFO
+ver="{ver}"
+rand="{rand}"
+selectedDrive="{selectedDrive}"
 import os,glob
 from ctypes import windll
 from pathlib import Path
-windll.kernel32.SetConsoleTitleW('LTFO: Removal Tool - v'+str(ver))
-filenameEstimate='READ_ME ['+str(rand)
-scriptnameEstimate='Removal Tool ['+str(rand)
+windll.kernel32.SetConsoleTitleW('{proj}: Removal Tool - v'+ver)
+filenameEstimate='READ_ME ['+rand
+scriptnameEstimate='Removal Tool ['+rand
 i=0
 for x in Path(selectedDrive+':/').glob('**'):
         try:
@@ -237,41 +276,43 @@ except:
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
-    i=0
+    i = 0
     print('\nCreating files...')
-    start=time.time() #take note of the current time
+    start = time.time()  # Take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
-        if i==0:
-            try: #Create the removal script
-                filename=f'Removal Tool [{rand}].py'
-                f=open(f'{x}\\{filename}', 'w')
+        if i == 0:
+            try:  # Create the removal script
+                filename = f'Removal Tool [{rand}].py'
+                f = open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
                 f.close()
-                i=i+1
+                i = i+1
                 print(f'{i}. Created: {x}\\{filename}')
             except:
                 print(f'[FAILED: REMOVAL SCRIPT]: {x}\\{filename}')
                 print('***Failed to create removal script!***')
 
-        try: #Create the READ_ME files
-            filename= f'READ_ME [{rand}] [#{i}].txt'
-            f=open(str(x)+'\\'+filename, 'w')
+        try:  # Create the READ_ME files
+            filename = f'READ_ME [{rand}] [#{i}].txt'
+            f = open(str(x)+'\\'+filename, 'w')
             msg = defaultMsg if customMsg == '' else customMsg
             f.write(msg+removalMsg)
             f.close()
-            i=i+1
+            i = i+1
             print(f'{i}. Created: {x}\\{filename}')
         except Exception as e:
             print(f'[FAILED]: {x}\\{filename}')
             print(e)
 
-    taken=time.time()-start #calculate how long the operation took
+    taken = time.time()-start  # Calculate how long the operation took
     print('\n')
     asciiRaw()
-    print(f'Created {i} files in {(round(taken, 2))} seconds!\nPress any key to exit...')
+    print(f'''Created {i} files in {(round(taken, 2))} seconds!
+         Press any key to exit...''')
     cmd('pause>nul')
     exit()
 
-#Run the script
-update() #check for updates
-setupMessage() #Start at the setupMessage module
+
+# Run the script
+update()  # Check for updates
+setupMessage()  # Start at the setupMessage module
