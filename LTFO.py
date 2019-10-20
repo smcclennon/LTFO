@@ -124,7 +124,7 @@ def update():
             print(f'Downloading {latestFilename}...')
             urllib.request.urlretrieve(ddl, latestFilename)
             # Write the current filename to LTFO.tmp
-            f = open(proj+'.tmp', 'w')
+            f = open(f'{proj}.tmp', 'w')
             f.write(str(os.path.basename(__file__)))
             f.close()
             os.system(f'"{latestFilename}"')  # Open latest version
@@ -330,7 +330,7 @@ No files have been generated yet.
                 if confirm != 'N':
                     cancel=1
                     stats()
-                    
+
 
         try:  # Create the READ_ME files
             filename = f'READ_ME [{rand}] [#{i}].txt'
