@@ -4,6 +4,18 @@ ver = '4.1.0'
 proj = 'LTFO'
 
 
+# ----------------------------------------------------------------------------------------------
+
+# Default message LTFO uses if the user presses [Enter] when asked to configure a custom message
+# You can customise ('''the area between the triple quotes''')
+# Variables: {computer}, {username}
+Default_Message = '''You forgot to logout of {computer}!
+This is a friendly reminder that you should probably do that next time.'''
+
+# ----------------------------------------------------------------------------------------------
+
+
+
 print('Importing requirements...')
 try:
     # Attempt to import requirements
@@ -70,10 +82,6 @@ options = {
 }
 
 
-defaultMsg = '''You forgot to logout of {computer}!
-This is a friendly reminder that you should probably do that next time.'''.format(**variables)
-
-
 def update():
     updateAttempt = 0
     display()
@@ -125,12 +133,25 @@ def update():
 
 def setupMessage():
     display()
+    try:
+        global defaultMsg
+        defaultMsg = Default_Message.format(**variables)
+    except:
+        # Load the backup defaultMsg. It is reccomended that you do not touch this.
+        defaultMsg = '''You forgot to logout of {computer}!
+This is a friendly reminder that you should probably do that next time.'''.format(**variables)
+        print('''Error: Unable to parse variables used in "Default_Message".
+To fix this, remove any invalid {variables} from "Default_Message" at the top of this script.
+
+Loaded backup message.
+''')
+
     print('Computer: {computer}'.format(**variables))
     print('Username: {username}'.format(**variables))
-    print('\nVariables: {computer}, {username}, {nl}')
+    print('\nVariables: {computer}, {username}, \\n')
     print('Enter your custom message. Leave blank to use the default message.')
     try:
-        customMessage = input('\n> ').format(**variables)
+        customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
     except:
         print('Invalid variable. Please try again.')
         sleep(1)
