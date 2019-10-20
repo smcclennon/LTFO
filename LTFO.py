@@ -80,12 +80,12 @@ def update():
     print('Checking for updates...')
     try:  # Remove previous version if just updated
         global proj
-        with open(proj+'.tmp', 'r') as content_file:
+        with open(f'{proj}.tmp', 'r') as content_file:
             oldFile = str(content_file.read())
             # If the old version has the current filename, don't delete
             if oldFile != os.path.basename(__file__):
                 os.remove(oldFile)
-        os.remove(proj+'.tmp')
+        os.remove(f'{proj}.tmp')
     except:
         pass
     while updateAttempt < 3:
@@ -107,11 +107,11 @@ def update():
             latest = '0'
     if latest > ver:
         print('\nUpdate available!')
-        print('Latest Version: v'+latest)
-        print('\n'+str(patchNotes)+'\n')
+        print(f'Latest Version: v{latest}')
+        print(f'\n{patchNotes}\n')
         confirm = input(str('Update now? [Y/n] ')).upper()
         if confirm == '' or confirm == 'Y':
-            latestFilename = proj+' v'+str(latest)+'.py'
+            latestFilename = f'{proj} v{latest}.py'
             # Download latest version to cwd
             print(f'Downloading {latestFilename}...')
             urllib.request.urlretrieve(ddl, latestFilename)
@@ -119,7 +119,7 @@ def update():
             f = open(proj+'.tmp', 'w')
             f.write(str(os.path.basename(__file__)))
             f.close()
-            os.system('"'+latestFilename+'"')  # Open latest version
+            os.system(f'"{latestFilename}"')  # Open latest version
             exit()
 
 
