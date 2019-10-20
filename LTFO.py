@@ -14,14 +14,13 @@ try:
 except:
     # Display error message on failure
     print('Error: one or more libraries could not be imported!')
-    print('Visit github.com/smcclennon/LTFO for support\n\nPress enter to exit...')
+    print(f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
     input()
     exit()
 
 
 # Set console window title
-windll.kernel32.SetConsoleTitleW(
-    f'{proj} - v{ver}')
+windll.kernel32.SetConsoleTitleW(f'{proj} - v{ver}')
 
 
 # Run a specific command
@@ -34,21 +33,19 @@ def sleep(x):
     time.sleep(x)
 
 
-# Print the logo
-def asciiRaw():
-    print(f'''
-██╗  ████████╗███████╗ ██████╗
+# LTFO logo
+asciiRaw=f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
 ██║     ██║   █████╗  ██║   ██║  v{ver}
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
-╚══════╝╚═╝   ╚═╝      ╚═════╝''')
+╚══════╝╚═╝   ╚═╝      ╚═════╝'''
 
 
 # Clear the display
 def display():
     cmd('cls')
-    asciiRaw()
+    print(asciiRaw)
 
 
 # Prompt the user to choose what to do
@@ -276,8 +273,10 @@ except:
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
-    i = 0
     print('\nCreating files...')
+    global cancel, i, start
+    cancel=0
+    i = 0
     start = time.time()  # Take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
         if i == 0:
@@ -289,8 +288,28 @@ os.system('timeout 3')'''
                 i = i+1
                 print(f'{i}. Created: {x}\\{filename}')
             except:
-                print(f'[FAILED: REMOVAL SCRIPT]: {x}\\{filename}')
-                print('***Failed to create removal script!***')
+                print(f'''
+=====================================================
+[FAILED: REMOVAL SCRIPT]: {x}\\{filename}
+***Failed to create LTFO removal script!***
+
+Removing generated files will have to be done
+manually!
+
+It is highly reccomended that you
+cancel the operation!
+
+No files have been generated yet.
+=====================================================''')
+                global taken
+                taken = time.time()-start
+                f.close()
+                os.remove(f'{x}\\{filename}')
+                confirm = input(str('Cancel the operation? [Y/n] ')).upper()
+                if confirm != 'N':
+                    cancel=1
+                    stats()
+                    
 
         try:  # Create the READ_ME files
             filename = f'READ_ME [{rand}] [#{i}].txt'
@@ -303,10 +322,13 @@ os.system('timeout 3')'''
         except Exception as e:
             print(f'[FAILED]: {x}\\{filename}')
             print(e)
-
-    taken = time.time()-start  # Calculate how long the operation took
+    stats()
+def stats():
+    if cancel==0:
+        global taken
+        taken = time.time()-start  # Calculate how long the operation took
     print('\n')
-    asciiRaw()
+    print(asciiRaw)
     print(f'''Created {i} files in {(round(taken, 2))} seconds!
          Press any key to exit...''')
     cmd('pause>nul')
