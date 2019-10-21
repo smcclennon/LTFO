@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '4.1.0'
+ver = '4.2.0'
 proj = 'LTFO'
 
 
@@ -25,7 +25,7 @@ try:
     from pathlib import Path
 except:
     # Display error message on failure
-    print('Error: one or more libraries could not be imported!')
+    print('\nError: one or more libraries could not be imported!')
     print(f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
     input()
     exit()
@@ -73,8 +73,7 @@ def confirmChoice():
 # Store variables for calling in custom messages
 variables = {
     'computer': socket.gethostname(),
-    'username': getpass.getuser(),
-    'nl': '\n'
+    'username': getpass.getuser()
 }
 options = {
     'message': '',  # Store custom message if one is created
@@ -85,7 +84,7 @@ options = {
 def update():
     updateAttempt = 0
     display()
-    print('Checking for updates...')
+    print('Checking for updates...', end='\r')
     try:  # Remove previous version if just updated
         global proj
         with open(f'{proj}.tmp', 'r') as content_file:
@@ -103,25 +102,32 @@ def update():
                 repo = []
                 for line in url.readlines():
                     repo.append(line.decode().strip())
-                api = repo[0]  # Latest release details
+                apiLatest = repo[0]  # Latest release details
                 proj = repo[1]  # Project name
                 ddl = repo[2]  # Direct download
-            with urllib.request.urlopen(api) as url:
+                apiReleases = repo[3] # List of patch notes
+            with urllib.request.urlopen(apiLatest) as url:
                 data = json.loads(url.read().decode())
                 latest = data['tag_name'][1:]
-                patchNotes = data['body']
+            del data # Prevent overlapping variable data
+            release = json.loads(urllib.request.urlopen(apiReleases).read().decode())
+            releases = [
+                (data['tag_name'],data['body'])
+                for data in release
+                if data['tag_name'] > ver][::-1]
             updateAttempt = 3
         except:
             latest = '0'
     if latest > ver:
-        print('\nUpdate available!')
-        print(f'Latest Version: v{latest}')
-        print(f'\n{patchNotes}\n')
+        print('Update available!      ')
+        print(f'Latest Version: v{latest}\n')
+        for release in releases:
+            print(f'{release[0]}:\n{release[1]}\n')
         confirm = input(str('Update now? [Y/n] ')).upper()
         if confirm == '' or confirm == 'Y':
             latestFilename = f'{proj} v{latest}.py'
             # Download latest version to cwd
-            print(f'Downloading {latestFilename}...')
+            print(f'Downloading "{latestFilename}"...')
             urllib.request.urlretrieve(ddl, latestFilename)
             # Write the current filename to LTFO.tmp
             f = open(f'{proj}.tmp', 'w')
