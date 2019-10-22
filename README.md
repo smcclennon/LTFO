@@ -20,7 +20,7 @@ The text file includes easy to follow instructions to remove all of the files cr
 
  
 ## Installation
-The script is designed to be run from a USB drive, but you can also download the latest release directly onto the target machine.
+The script is designed to be ran from a USB drive, but you can also download the latest release directly onto the target machine.
 
 #### Requirements:
 - Python 3.5+ (On a USB* or on the target machine)
@@ -39,7 +39,7 @@ Auto-generated Removal Tool
 
 ## Todo
 - [ ] Specify a specific file to flood a drive with (as a customMsg {/path/to/file})
-- [ ] Display all patch notes between your version and the latest version when an update is available
+- [x] Display all patch notes between your version and the latest version when an update is available
 
 *Written in Python 3.7.4 on Windows 10*
 
