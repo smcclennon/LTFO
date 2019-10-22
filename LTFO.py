@@ -8,7 +8,7 @@ proj = 'LTFO'
 
 # Default message LTFO uses if the user presses [Enter] when asked to configure a custom message
 # You can customise ('''the area between the triple quotes''')
-# Variables: {computer}, {username}
+# Variables: {computer}, {username}, {time}, {date}
 Default_Message = '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''
 
@@ -73,7 +73,9 @@ def confirmChoice():
 # Store variables for calling in custom messages
 variables = {
     'computer': socket.gethostname(),
-    'username': getpass.getuser()
+    'username': getpass.getuser(),
+    'time': time.strftime('%H:%M'),
+    'date': time.strftime('%d.%m.%y')
 }
 options = {
     'message': '',  # Store custom message if one is created
@@ -140,7 +142,7 @@ def update():
 def setupMessage():
     display()
     try:
-        global defaultMsg
+        #global defaultMsg
         defaultMsg = Default_Message.format(**variables)
     except:
         # Load the backup defaultMsg. It is reccomended that you do not touch this.
@@ -152,8 +154,11 @@ To fix this, remove any invalid {variables} from "Default_Message" at the top of
 Loaded backup message.
 ''')
 
-    print('Computer: {computer}'.format(**variables))
-    print('Username: {username}'.format(**variables))
+    print('''\r
+Computer: {computer}
+Username: {username}
+Time: {time}
+Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, \\n')
     print('Enter your custom message. Leave blank to use the default message.')
     try:
@@ -363,5 +368,13 @@ def stats():
 
 
 # Run the script
-update()  # Check for updates
-setupMessage()  # Start at the setupMessage module
+try:
+    update()  # Check for updates
+    setupMessage()  # Start at the setupMessage module
+except:
+    print(f'''\n\n\nAn error occured after {proj} successfully loaded.
+Visit github.com/smcclennon/{proj} for support''')
+    windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
+Visit github.com/smcclennon/{proj} for support.
+Press OK to exit.''', f'{proj} v{ver}', 1)
+    exit()
