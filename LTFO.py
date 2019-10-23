@@ -8,7 +8,7 @@ proj = 'LTFO'
 
 # Bypass LTFO's default message: used when the user skips the custom message creator
 # You can customise ('''the area between the triple quotes''')
-# Variables: {computer}, {username}, {time}, {date}
+# Variables: {computer}, {username}, {time}, {date}, $path\to\file
 configureMessage = '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''
 
@@ -83,9 +83,10 @@ options = {
     'messageBackup': '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''.format(**variables),
     'messageType': '',
+    'filename': '',
+    'filePath': '',
     'drive': '',
     'start': 0,
-    'cancel': 0,
     'filesProcessed': 0,
     'processDuration': 0
 }
@@ -155,7 +156,7 @@ Computer: {computer}
 Username: {username}
 Time: {time}
 Date: {date}'''.format(**variables))
-    print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
+    print('\nVariables: {computer}, {username}, {time}, {date}, $path\\to\\file, \\n')
     print('Enter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
@@ -169,6 +170,7 @@ Date: {date}'''.format(**variables))
 
 
 def confirmMessage():
+    support = 1
     display()
     customMessage = options['message']
     messageBackup = options['messageBackup']
@@ -186,9 +188,35 @@ def confirmMessage():
 To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
 ''')
     message = options['message']
+    if message[0] == '$':
+        if Path(os.path.join(os.path.dirname(__file__), message[1:])).is_file():
+            options['filePath'] = os.path.join(os.path.dirname(__file__), message[1:])
+            options['messageType'] = '$File'
+            options['filename'] = os.path.basename(options['filePath'])
+            try:
+                with open(options['filePath'], 'r') as fileContents:
+                    options['message'] = fileContents.read()
+            except:
+                support = 0
+                options['message'] = '''Error: Unable to read file
+Filetype unsupported, only text-based files are supported at this time.
+
+[There may also be an issue with the file path provided]'''
+            try:
+                options['message'] = options['message'].format(**variables)
+            except:
+                pass
+    message = options['message']
     messageType = options['messageType']
+    filename = options['filename']
     print(f'Message Type: {messageType}')
+    if messageType == '$File':
+        print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
+    if support == 0:
+        print('Press any key to go back...')
+        cmd('pause>nul')
+        setupMessage()
     confirm = confirmChoice()
     if confirm:
         setupDrive()
@@ -245,6 +273,9 @@ def confirmWrite():
     print(f'Selected Drive: {options["drive"]}')
 
     print(f'Message Type: {messageType}')
+    if messageType == '$File':
+        filename = options['filename']
+        print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
     time.sleep(1)
@@ -264,15 +295,27 @@ def commitWrite():
     rand = randint(10000, 99999)
     customMsg = options['message']
     selectedDrive = options['drive']
+    messageType = options['messageType']
 
-    print(f'\nSelected Drive: {selectedDrive}\n\nTo begin flooding, please enter the confirmation code {rand}.')
+    print(f'\nSelected Drive: {selectedDrive}\nMessage Type: {messageType}\n\nTo begin flooding, please enter the confirmation code {rand}.')
     confirm = input('\n>>> ')
     try:
         confirm = int(confirm)
     except:
         confirmWrite()
+    i = 0
     if confirm != rand:
         confirmWrite()
+
+    scriptnameEstimate=f'Removal Tool [{rand}'
+    filenameEstimate=f'READ_ME [{rand}'
+
+    removaltoolFilename = f'Removal Tool [{rand}].py'
+    if options['messageType'] == '$File':
+        floodFilename = options['filename']
+        filenameEstimate = options['filename']
+        removaltoolFilename = f'Removal Tool [{floodFilename}].py'
+
 
     # Removal instructions written to all READ_ME files
     removalMsg = f'''\n\n\n
@@ -297,13 +340,13 @@ import os,glob
 from ctypes import windll
 from pathlib import Path
 windll.kernel32.SetConsoleTitleW('{proj}: Removal Tool - v'+ver)
-filenameEstimate='READ_ME ['+rand
-scriptnameEstimate='Removal Tool ['+rand
+filenameEstimate="{filenameEstimate}"
+scriptnameEstimate="{scriptnameEstimate}"
 i=0
 for x in Path(selectedDrive+':/').glob('**'):
         try:
             i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*.txt', recursive=True):
+            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate, recursive=True):
                     os.remove(y)
                     print(str(i)+'. Deleted: '+str(y))
         except:
@@ -318,14 +361,16 @@ except:
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
+    messageType = options['messageType']
     print('\nCreating files...')
-    cancel=0
-    i = 0
+    
     options['start'] = time.time()  # Take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
+        if options['messageType'] != '$File':
+            floodFilename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
-                filename = f'Removal Tool [{rand}].py'
+                filename = removaltoolFilename
                 f = open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
                 f.close()
@@ -351,15 +396,17 @@ No files have been generated yet.
                 os.remove(f'{x}\\{filename}')
                 confirm = input(str('Cancel the operation? [Y/n] ')).upper()
                 if confirm != 'N':
-                    options['cancel'] = 1
                     stats()
 
 
         try:  # Create the READ_ME files
-            filename = f'READ_ME [{rand}] [#{i}].txt'
+            filename = floodFilename
             f = open(str(x)+'\\'+filename, 'w')
-            msg = defaultMsg if customMsg == '' else customMsg
-            f.write(msg+removalMsg)
+            msg = options['message']
+            if messageType != '$File':
+                f.write(msg+removalMsg)
+            elif messageType == '$File':
+                f.write(msg)
             f.close()
             i = i+1
             print(f'{i}. Created: {x}\\{filename}')
