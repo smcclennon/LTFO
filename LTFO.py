@@ -6,10 +6,10 @@ proj = 'LTFO'
 
 # ----------------------------------------------------------------------------------------------
 
-# Default message LTFO uses if the user presses [Enter] when asked to configure a custom message
+# Bypass LTFO's default message: used when the user skips the custom message creator
 # You can customise ('''the area between the triple quotes''')
-# Variables: {computer}, {username}, {time}, {date}
-Default_Message = '''You forgot to logout of {computer}!
+# Variables: {computer}, {username}, {time}, {date}, $path\to\file
+configureMessage = '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''
 
 # ----------------------------------------------------------------------------------------------
@@ -25,8 +25,8 @@ try:
     from pathlib import Path
 except:
     # Display error message on failure
-    print('\nError: one or more libraries could not be imported!')
-    print(f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
+    print('\nError: one or more libraries could not be imported!'
+          f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
     input()
     exit()
 
@@ -78,8 +78,17 @@ variables = {
     'date': time.strftime('%d.%m.%y')
 }
 options = {
-    'message': '',  # Store custom message if one is created
-    'drive': ''
+    'proj': proj,
+    'message': '',  # Store message for file creation
+    'messageBackup': '''You forgot to logout of {computer}!
+This is a friendly reminder that you should probably do that next time.'''.format(**variables),
+    'messageType': '',
+    'filename': '',
+    'filePath': '',
+    'drive': '',
+    'start': 0,
+    'filesProcessed': 0,
+    'processDuration': 0
 }
 
 
@@ -88,7 +97,7 @@ def update():
     display()
     print('Checking for updates...', end='\r')
     try:  # Remove previous version if just updated
-        global proj
+        proj = options['proj']
         with open(f'{proj}.tmp', 'r') as content_file:
             oldFile = str(content_file.read())
             # If the old version has the current filename, don't delete
@@ -141,25 +150,13 @@ def update():
 
 def setupMessage():
     display()
-    try:
-        #global defaultMsg
-        defaultMsg = Default_Message.format(**variables)
-    except:
-        # Load the backup defaultMsg. It is reccomended that you do not touch this.
-        defaultMsg = '''You forgot to logout of {computer}!
-This is a friendly reminder that you should probably do that next time.'''.format(**variables)
-        print('''Error: Unable to parse variables used in "Default_Message".
-To fix this, remove any invalid {variables} from "Default_Message" at the top of this script.
-
-Loaded backup message.
-''')
-
-    print('''\r
+# \033[F moves cursor to the beginning of the previous line
+    print('''\033[F
 Computer: {computer}
 Username: {username}
 Time: {time}
 Date: {date}'''.format(**variables))
-    print('\nVariables: {computer}, {username}, \\n')
+    print('\nVariables: {computer}, {username}, {time}, {date}, $path\\to\\file, \\n')
     print('Enter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
@@ -168,15 +165,58 @@ Date: {date}'''.format(**variables))
         sleep(1)
         setupMessage()
     options['message'] = customMessage
+    options['messageType'] = 'Custom'
     confirmMessage()
 
 
 def confirmMessage():
+    support = 1
     display()
-    customMsg = options['message']
-    print(f'Custom Message: {"Disabled" if customMsg == "" else "Enabled"}')
-    print(
-        f'\n______ Message ______\n\n{defaultMsg if customMsg == "" else customMsg}\n\n______ Message ______\n')
+    customMessage = options['message']
+    messageBackup = options['messageBackup']
+    if customMessage == '':
+        try:
+            options['message'] = configureMessage.format(**variables)
+            if options['message'] == options['messageBackup']:
+                options['messageType'] = 'Default'
+            else:
+                options['messageType'] = 'Config'
+        except:
+            options['message'] = options['messageBackup']
+            options['messageType'] = 'Backup'
+            print('''Error: Unable to parse variables used in "configureMessage".
+To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
+''')
+    message = options['message']
+    if message[0] == '$':
+        if Path(os.path.join(os.path.dirname(__file__), message[1:])).is_file():
+            options['filePath'] = os.path.join(os.path.dirname(__file__), message[1:])
+            options['messageType'] = '$File'
+            options['filename'] = os.path.basename(options['filePath'])
+            try:
+                with open(options['filePath'], 'r') as fileContents:
+                    options['message'] = fileContents.read()
+            except:
+                support = 0
+                options['message'] = '''Error: Unable to read file
+Filetype unsupported, only text-based files are supported at this time.
+
+[There may also be an issue with the file path provided]'''
+            try:
+                options['message'] = options['message'].format(**variables)
+            except:
+                pass
+    message = options['message']
+    messageType = options['messageType']
+    filename = options['filename']
+    print(f'Message Type: {messageType}')
+    if messageType == '$File':
+        print(f'Filename: {filename}')
+    print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
+    if support == 0:
+        print('Press any key to go back...')
+        cmd('pause>nul')
+        setupMessage()
     confirm = confirmChoice()
     if confirm:
         setupDrive()
@@ -223,7 +263,8 @@ def confirmDrive():
 
 def confirmWrite():
     display()
-    customMsg = options['message']
+    message = options['message']
+    messageType = options['messageType']
     selectedDrive = options['drive']
 
     print('Computer: {computer}'.format(**variables))
@@ -231,8 +272,11 @@ def confirmWrite():
 
     print(f'Selected Drive: {options["drive"]}')
 
-    print(f'Custom Message: {"Disabled" if customMsg is False else "Enabled"}')
-    print(f'\n______ Message ______\n\n{defaultMsg if customMsg == "" else customMsg}\n\n______ Message ______\n')
+    print(f'Message Type: {messageType}')
+    if messageType == '$File':
+        filename = options['filename']
+        print(f'Filename: {filename}')
+    print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
     time.sleep(1)
     print(f'\nYou are about to flood all subdirectories in [{selectedDrive}:\\]!')
@@ -251,15 +295,27 @@ def commitWrite():
     rand = randint(10000, 99999)
     customMsg = options['message']
     selectedDrive = options['drive']
+    messageType = options['messageType']
 
-    print(f'\nSelected Drive: {selectedDrive}\n\nTo begin flooding, please enter the confirmation code {rand}.')
+    print(f'\nSelected Drive: {selectedDrive}\nMessage Type: {messageType}\n\nTo begin flooding, please enter the confirmation code {rand}.')
     confirm = input('\n>>> ')
     try:
         confirm = int(confirm)
     except:
         confirmWrite()
+    i = 0
     if confirm != rand:
         confirmWrite()
+
+    scriptnameEstimate=f'Removal Tool [{rand}'
+    filenameEstimate=f'READ_ME [{rand}'
+
+    removaltoolFilename = f'Removal Tool [{rand}].py'
+    if options['messageType'] == '$File':
+        floodFilename = options['filename']
+        filenameEstimate = options['filename']
+        removaltoolFilename = f'Removal Tool [{floodFilename}].py'
+
 
     # Removal instructions written to all READ_ME files
     removalMsg = f'''\n\n\n
@@ -284,13 +340,13 @@ import os,glob
 from ctypes import windll
 from pathlib import Path
 windll.kernel32.SetConsoleTitleW('{proj}: Removal Tool - v'+ver)
-filenameEstimate='READ_ME ['+rand
-scriptnameEstimate='Removal Tool ['+rand
+filenameEstimate="{filenameEstimate}"
+scriptnameEstimate="{scriptnameEstimate}"
 i=0
 for x in Path(selectedDrive+':/').glob('**'):
         try:
             i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*.txt', recursive=True):
+            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate, recursive=True):
                     os.remove(y)
                     print(str(i)+'. Deleted: '+str(y))
         except:
@@ -305,15 +361,16 @@ except:
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
+    messageType = options['messageType']
     print('\nCreating files...')
-    global cancel, i, start
-    cancel=0
-    i = 0
-    start = time.time()  # Take note of the current time
+    
+    options['start'] = time.time()  # Take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
+        if options['messageType'] != '$File':
+            floodFilename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
-                filename = f'Removal Tool [{rand}].py'
+                filename = removaltoolFilename
                 f = open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
                 f.close()
@@ -333,48 +390,61 @@ cancel the operation!
 
 No files have been generated yet.
 =====================================================''')
-                global taken
-                taken = time.time()-start
+                options['processDuration'] = time.time() - options['start']
+                options['filesProcessed'] = i
                 f.close()
                 os.remove(f'{x}\\{filename}')
                 confirm = input(str('Cancel the operation? [Y/n] ')).upper()
                 if confirm != 'N':
-                    cancel=1
                     stats()
 
 
         try:  # Create the READ_ME files
-            filename = f'READ_ME [{rand}] [#{i}].txt'
+            filename = floodFilename
             f = open(str(x)+'\\'+filename, 'w')
-            msg = defaultMsg if customMsg == '' else customMsg
-            f.write(msg+removalMsg)
+            msg = options['message']
+            if messageType != '$File':
+                f.write(msg+removalMsg)
+            elif messageType == '$File':
+                f.write(msg)
             f.close()
             i = i+1
             print(f'{i}. Created: {x}\\{filename}')
         except Exception as e:
             print(f'[FAILED]: {x}\\{filename}')
             print(e)
+    options['processDuration'] = time.time() - options['start']
+    options['filesProcessed'] = i
     stats()
 def stats():
-    if cancel==0:
-        global taken
-        taken = time.time()-start  # Calculate how long the operation took
+    filesProcessed = options['filesProcessed']
+    processDuration = options['processDuration']
     print('\n')
     print(asciiRaw)
-    print(f'''Created {i} files in {(round(taken, 2))} seconds!
+    print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
          Press any key to exit...''')
     cmd('pause>nul')
     exit()
 
 
+# Debug = 0: Display a message and exit when an uncaught exception occurs
+# Debug = 1: Show error details & crash when an uncaught exception occurs
+debug=1
+
+
 # Run the script
-try:
-    update()  # Check for updates
-    setupMessage()  # Start at the setupMessage module
-except:
-    print(f'''\n\n\nAn error occured after {proj} successfully loaded.
-Visit github.com/smcclennon/{proj} for support''')
-    windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
-Visit github.com/smcclennon/{proj} for support.
-Press OK to exit.''', f'{proj} v{ver}', 1)
-    exit()
+if debug==0:
+    try:
+        update()  # Check for updates
+        setupMessage()  # Start at the setupMessage module
+    except:
+        # Uncaught exception:
+        print(f'''\n\n\nAn error occured after {proj} successfully loaded.
+    Visit github.com/smcclennon/{proj} for support''')
+        windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
+    Visit github.com/smcclennon/{proj} for support.
+    Press OK to exit.''', f'{proj} v{ver}', 1)
+        exit()
+elif debug==1:
+    update()
+    setupMessage()
