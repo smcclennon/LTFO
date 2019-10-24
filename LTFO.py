@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '4.2.0'
+ver = '5.0.0'
 proj = 'LTFO'
 
 
@@ -8,7 +8,7 @@ proj = 'LTFO'
 
 # Bypass LTFO's default message: used when the user skips the custom message creator
 # You can customise ('''the area between the triple quotes''')
-# Variables: {computer}, {username}, {time}, {date}, $path\to\file
+# Variables: {computer}, {username}, {time}, {date}, $gui, $path/to/file
 configureMessage = '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''
 
@@ -19,10 +19,11 @@ This is a friendly reminder that you should probably do that next time.'''
 print('Importing requirements...')
 try:
     # Attempt to import requirements
-    import time, string, os, socket, getpass, urllib.request, json
+    import time, string, os, socket, getpass, urllib.request, json, win32gui, win32con
     from ctypes import windll
     from random import randint
     from pathlib import Path
+    from shutil import copyfile
 except:
     # Display error message on failure
     print('\nError: one or more libraries could not be imported!'
@@ -156,7 +157,8 @@ Computer: {computer}
 Username: {username}
 Time: {time}
 Date: {date}'''.format(**variables))
-    print('\nVariables: {computer}, {username}, {time}, {date}, $path\\to\\file, \\n')
+    print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
+    print('Custom file selection: $gui, $path/to/file')
     print('Enter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
@@ -187,36 +189,63 @@ def confirmMessage():
             print('''Error: Unable to parse variables used in "configureMessage".
 To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
 ''')
+
     message = options['message']
-    if message[0] == '$':
-        if Path(os.path.join(os.path.dirname(__file__), message[1:])).is_file():
-            options['filePath'] = os.path.join(os.path.dirname(__file__), message[1:])
+
+    # Custom file GUI mode
+    if message == '$gui':
+        try:
+            print('Please select a file from the File picker GUI')
+            selectedFile, Filter, flags=win32gui.GetOpenFileNameW(
+                InitialDir=os.environ['temp'],
+                Flags=win32con.OFN_EXPLORER,
+                Title=f'{proj} v{ver}: Select a file to use for flooding',
+                Filter='All files\0*.*\0',
+                FilterIndex=0)
+            display()
+            options['filePath'] = selectedFile
             options['messageType'] = '$File'
             options['filename'] = os.path.basename(options['filePath'])
             try:
                 with open(options['filePath'], 'r') as fileContents:
                     options['message'] = fileContents.read()
             except:
-                support = 0
-                options['message'] = '''Error: Unable to read file
-Filetype unsupported, only text-based files are supported at this time.
+                options['message'] = 'Preview unavailable: Unsupported filetype'
+                options['messageType'] = '$Copy'
+                print('gui try fail')
+                input()
+        except:
+            # No file selected
+            setupMessage()
 
-[There may also be an issue with the file path provided]'''
-            try:
-                options['message'] = options['message'].format(**variables)
-            except:
-                pass
+    # Custom file console mode
+    elif message[0] == '$':
+        try:
+            if Path(os.path.join(os.path.dirname(__file__), message[1:])).is_file():
+                options['filePath'] = os.path.join(os.path.dirname(__file__), message[1:])
+                options['messageType'] = '$File'
+                options['filename'] = os.path.basename(options['filePath'])
+                try:
+                    if options['filePath'][-1] == '\\' or options['filePath'][-1] == '//':
+                        options['filePath'] = options['filePath'][:-1]
+                    with open(options['filePath'], 'r') as fileContents:
+                        options['message'] = fileContents.read()
+                except:
+                    options['message'] = 'Preview unavailable: Unsupported filetype'
+                    options['messageType'] = '$Copy'
+                try:
+                    options['message'] = options['message'].format(**variables)
+                except:
+                    pass
+        except:
+            setupMessage()
     message = options['message']
     messageType = options['messageType']
     filename = options['filename']
     print(f'Message Type: {messageType}')
-    if messageType == '$File':
+    if messageType == '$File' or messageType == '$Copy':
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
-    if support == 0:
-        print('Press any key to go back...')
-        cmd('pause>nul')
-        setupMessage()
     confirm = confirmChoice()
     if confirm:
         setupDrive()
@@ -273,7 +302,7 @@ def confirmWrite():
     print(f'Selected Drive: {options["drive"]}')
 
     print(f'Message Type: {messageType}')
-    if messageType == '$File':
+    if messageType == '$File' or messageType == '$Copy':
         filename = options['filename']
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
@@ -309,12 +338,14 @@ def commitWrite():
 
     scriptnameEstimate=f'Removal Tool [{rand}'
     filenameEstimate=f'READ_ME [{rand}'
+    filePath = options['filePath']
 
     removaltoolFilename = f'Removal Tool [{rand}].py'
-    if options['messageType'] == '$File':
+    if options['messageType'] == '$File' or options['messageType'] == '$Copy':
         floodFilename = options['filename']
         filenameEstimate = options['filename']
         removaltoolFilename = f'Removal Tool [{floodFilename}].py'
+        scriptnameEstimate=f'Removal Tool [{floodFilename}'
 
 
     # Removal instructions written to all READ_ME files
@@ -363,10 +394,10 @@ os.system('timeout 3')'''
 
     messageType = options['messageType']
     print('\nCreating files...')
-    
+
     options['start'] = time.time()  # Take note of the current time
     for x in Path(selectedDrive+':/').glob('**'):
-        if options['messageType'] != '$File':
+        if options['messageType'] != '$File' and options['messageType'] != '$Copy':
             floodFilename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
@@ -401,13 +432,16 @@ No files have been generated yet.
 
         try:  # Create the READ_ME files
             filename = floodFilename
-            f = open(str(x)+'\\'+filename, 'w')
-            msg = options['message']
-            if messageType != '$File':
-                f.write(msg+removalMsg)
-            elif messageType == '$File':
-                f.write(msg)
-            f.close()
+            if messageType != '$Copy':
+                f = open(str(x)+'\\'+filename, 'w')
+                msg = options['message']
+                if messageType != '$File':
+                    f.write(msg+removalMsg)
+                elif messageType == '$File':
+                    f.write(msg)
+                f.close()
+            if messageType == '$Copy':
+                copyfile(f'{filePath}', f'{x}\\{filename}')
             i = i+1
             print(f'{i}. Created: {x}\\{filename}')
         except Exception as e:
