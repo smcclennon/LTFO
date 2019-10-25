@@ -15,7 +15,6 @@ This is a friendly reminder that you should probably do that next time.'''
 # ----------------------------------------------------------------------------------------------
 
 
-
 print('Importing requirements...')
 try:
     # Attempt to import requirements
@@ -47,7 +46,7 @@ def sleep(x):
 
 
 # LTFO logo
-asciiRaw=f'''██╗  ████████╗███████╗ ██████╗
+asciiRaw = f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
 ██║     ██║   █████╗  ██║   ██║  v{ver}
 ██║     ██║   ██╔══╝  ██║   ██║
@@ -117,14 +116,15 @@ def update():
                 apiLatest = repo[0]  # Latest release details
                 proj = repo[1]  # Project name
                 ddl = repo[2]  # Direct download
-                apiReleases = repo[3] # List of patch notes
+                apiReleases = repo[3]  # List of patch notes
             with urllib.request.urlopen(apiLatest) as url:
                 data = json.loads(url.read().decode())
                 latest = data['tag_name'][1:]
-            del data # Prevent overlapping variable data
-            release = json.loads(urllib.request.urlopen(apiReleases).read().decode())
+            del data  # Prevent overlapping variable data
+            release = json.loads(urllib.request.urlopen(
+                apiReleases).read().decode())
             releases = [
-                (data['tag_name'],data['body'])
+                (data['tag_name'], data['body'])
                 for data in release
                 if data['tag_name'] > ver][::-1]
             updateAttempt = 3
@@ -158,8 +158,8 @@ Username: {username}
 Time: {time}
 Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
-    print('Custom file selection: $gui, $path/to/file')
-    print('Enter your custom message. Leave blank to use the default message.')
+    print('File selection$gui: $gui, $path/to/file')
+    print('\nEnter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
     except:
@@ -196,7 +196,7 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
     if message == '$gui':
         try:
             print('Please select a file from the File picker GUI')
-            selectedFile, Filter, flags=win32gui.GetOpenFileNameW(
+            selectedFile, Filter, flags = win32gui.GetOpenFileNameW(
                 InitialDir=os.environ['temp'],
                 Flags=win32con.OFN_EXPLORER,
                 Title=f'{proj} v{ver}: Select a file to use for flooding',
@@ -212,8 +212,11 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
             except:
                 options['message'] = 'Preview unavailable: Unsupported filetype'
                 options['messageType'] = '$Copy'
-                print('gui try fail')
-                input()
+            # Attempt to load variables
+            try:
+                options['message'] = options['message'].format(**variables)
+            except:
+                pass
         except:
             # No file selected
             setupMessage()
@@ -221,18 +224,18 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
     # Custom file console mode
     elif message[0] == '$':
         try:
-            if Path(os.path.join(os.path.dirname(__file__), message[1:])).is_file():
-                options['filePath'] = os.path.join(os.path.dirname(__file__), message[1:])
+            if os.path.exists(os.path.join(os.path.dirname(__file__), message[1:])):
+                options['filePath'] = os.path.join(
+                    os.path.dirname(__file__), message[1:])
                 options['messageType'] = '$File'
                 options['filename'] = os.path.basename(options['filePath'])
                 try:
-                    if options['filePath'][-1] == '\\' or options['filePath'][-1] == '//':
-                        options['filePath'] = options['filePath'][:-1]
                     with open(options['filePath'], 'r') as fileContents:
                         options['message'] = fileContents.read()
                 except:
                     options['message'] = 'Preview unavailable: Unsupported filetype'
                     options['messageType'] = '$Copy'
+                #Attempt to load variables
                 try:
                     options['message'] = options['message'].format(**variables)
                 except:
@@ -336,8 +339,8 @@ def commitWrite():
     if confirm != rand:
         confirmWrite()
 
-    scriptnameEstimate=f'Removal Tool [{rand}'
-    filenameEstimate=f'READ_ME [{rand}'
+    scriptnameEstimate = f'Removal Tool [{rand}'
+    filenameEstimate = f'READ_ME [{rand}'
     filePath = options['filePath']
 
     removaltoolFilename = f'Removal Tool [{rand}].py'
@@ -345,8 +348,7 @@ def commitWrite():
         floodFilename = options['filename']
         filenameEstimate = options['filename']
         removaltoolFilename = f'Removal Tool [{floodFilename}].py'
-        scriptnameEstimate=f'Removal Tool [{floodFilename}'
-
+        scriptnameEstimate = f'Removal Tool [{floodFilename}'
 
     # Removal instructions written to all READ_ME files
     removalMsg = f'''\n\n\n
@@ -429,7 +431,6 @@ No files have been generated yet.
                 if confirm != 'N':
                     stats()
 
-
         try:  # Create the READ_ME files
             filename = floodFilename
             if messageType != '$Copy':
@@ -450,6 +451,8 @@ No files have been generated yet.
     options['processDuration'] = time.time() - options['start']
     options['filesProcessed'] = i
     stats()
+
+
 def stats():
     filesProcessed = options['filesProcessed']
     processDuration = options['processDuration']
@@ -463,11 +466,11 @@ def stats():
 
 # Debug = 0: Display a message and exit when an uncaught exception occurs
 # Debug = 1: Show error details & crash when an uncaught exception occurs
-debug=1
+debug = 1
 
 
 # Run the script
-if debug==0:
+if debug == 0:
     try:
         update()  # Check for updates
         setupMessage()  # Start at the setupMessage module
@@ -479,6 +482,6 @@ if debug==0:
     Visit github.com/smcclennon/{proj} for support.
     Press OK to exit.''', f'{proj} v{ver}', 1)
         exit()
-elif debug==1:
+elif debug == 1:
     update()
     setupMessage()
