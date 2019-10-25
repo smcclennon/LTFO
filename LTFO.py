@@ -158,7 +158,7 @@ Username: {username}
 Time: {time}
 Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
-    print('File selection$gui: $gui, $path/to/file')
+    print('File selection: $gui, $path/to/file')
     print('\nEnter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
