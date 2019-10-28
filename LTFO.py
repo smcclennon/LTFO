@@ -466,7 +466,7 @@ def stats():
 
 # Debug = 0: Display a message and exit when an uncaught exception occurs
 # Debug = 1: Show error details & crash when an uncaught exception occurs
-debug = 1
+debug = 0
 
 
 # Run the script
