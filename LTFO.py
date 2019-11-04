@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.0'
+ver = '5.0.1'
 proj = 'LTFO'
 
 
@@ -18,7 +18,7 @@ This is a friendly reminder that you should probably do that next time.'''
 print('Importing requirements...')
 try:
     # Attempt to import requirements
-    import time, string, os, socket, getpass, urllib.request, json, win32gui, win32con
+    import time, string, os, socket, getpass, urllib.request, json
     from ctypes import windll
     from random import randint
     from pathlib import Path
@@ -26,9 +26,26 @@ try:
 except:
     # Display error message on failure
     print('\nError: one or more libraries could not be imported!'
-          f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
+          f'\nVisit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
     input()
     exit()
+try:
+    import win32gui, win32con
+except:
+    print('\nError: unable to import "pypiwin32"')
+    confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
+    if confirm != 'N':
+        try:
+            os.system('pip install pypiwin32 --user')
+            os.system('cls')
+            os.system('"'+str(os.path.basename(__file__))+'"')
+            exit()
+        except:
+            print('Failed to install "pypiwin32"\nPress enter to exit...')
+        input()
+        exit()
+    exit()
+
 
 
 # Set console window title
@@ -88,7 +105,8 @@ This is a friendly reminder that you should probably do that next time.'''.forma
     'drive': '',
     'start': 0,
     'filesProcessed': 0,
-    'processDuration': 0
+    'processDuration': 0,
+    'status': 0
 }
 
 
@@ -379,7 +397,7 @@ i=0
 for x in Path(selectedDrive+':/').glob('**'):
         try:
             i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate, recursive=True):
+            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*', recursive=True):
                     os.remove(y)
                     print(str(i)+'. Deleted: '+str(y))
         except:
@@ -461,8 +479,7 @@ def stats():
     print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
          Press any key to exit...''')
     cmd('pause>nul')
-    exit()
-
+    options['status'] = 1
 
 # Debug = 0: Display a message and exit when an uncaught exception occurs
 # Debug = 1: Show error details & crash when an uncaught exception occurs
@@ -475,12 +492,13 @@ if debug == 0:
         update()  # Check for updates
         setupMessage()  # Start at the setupMessage module
     except:
-        # Uncaught exception:
-        print(f'''\n\n\nAn error occured after {proj} successfully loaded.
-    Visit github.com/smcclennon/{proj} for support''')
-        windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
-    Visit github.com/smcclennon/{proj} for support.
-    Press OK to exit.''', f'{proj} v{ver}', 1)
+        if options['status'] == 0:
+            # Uncaught exception:
+            print(f'''\n\n\nAn error occured after {proj} successfully loaded.
+        Visit github.com/smcclennon/{proj} for support''')
+            windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
+        Visit github.com/smcclennon/{proj} for support.
+        Press OK to exit.''', f'{proj} v{ver}', 1)
         exit()
 elif debug == 1:
     update()
