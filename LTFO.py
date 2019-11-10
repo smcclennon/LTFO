@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.1'
+ver = '5.0.2'
 proj = 'LTFO'
 
 
@@ -144,7 +144,7 @@ def update():
             releases = [
                 (data['tag_name'], data['body'])
                 for data in release
-                if data['tag_name'] > ver][::-1]
+                if data['tag_name'][1:] > ver][::-1]
             updateAttempt = 3
         except:
             latest = '0'
@@ -357,16 +357,17 @@ def commitWrite():
     if confirm != rand:
         confirmWrite()
 
-    scriptnameEstimate = f'Removal Tool [{rand}'
-    filenameEstimate = f'READ_ME [{rand}'
     filePath = options['filePath']
 
-    removaltoolFilename = f'Removal Tool [{rand}].py'
     if options['messageType'] == '$File' or options['messageType'] == '$Copy':
         floodFilename = options['filename']
         filenameEstimate = options['filename']
         removaltoolFilename = f'Removal Tool [{floodFilename}].py'
         scriptnameEstimate = f'Removal Tool [{floodFilename}'
+    else:
+        scriptnameEstimate = f'Removal Tool [{rand}'
+        filenameEstimate = f'READ_ME [{rand}'
+        removaltoolFilename = f'{scriptnameEstimate}].py'
 
     # Removal instructions written to all READ_ME files
     removalMsg = f'''\n\n\n
@@ -443,8 +444,11 @@ No files have been generated yet.
 =====================================================''')
                 options['processDuration'] = time.time() - options['start']
                 options['filesProcessed'] = i
-                f.close()
-                os.remove(f'{x}\\{filename}')
+                try:
+                    f.close()
+                    os.remove(f'{x}\\{filename}')
+                except:
+                    pass
                 confirm = input(str('Cancel the operation? [Y/n] ')).upper()
                 if confirm != 'N':
                     stats()
