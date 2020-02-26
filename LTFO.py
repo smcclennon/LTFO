@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.2'
+ver = '5.0.3'
 proj = 'LTFO'
 
 
@@ -19,6 +19,7 @@ print('Importing requirements...')
 try:
     # Attempt to import requirements
     import time, string, os, socket, getpass, urllib.request, json
+    from distutils.version import LooseVersion as semver
     from ctypes import windll
     from random import randint
     from pathlib import Path
@@ -28,22 +29,6 @@ except:
     print('\nError: one or more libraries could not be imported!'
           f'\nVisit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
     input()
-    exit()
-try:
-    import win32gui, win32con
-except:
-    print('\nError: unable to import "pypiwin32"')
-    confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
-    if confirm != 'N':
-        try:
-            os.system('pip install pypiwin32 --user')
-            os.system('cls')
-            os.system('"'+str(os.path.basename(__file__))+'"')
-            exit()
-        except:
-            print('Failed to install "pypiwin32"\nPress enter to exit...')
-        input()
-        exit()
     exit()
 
 
@@ -144,17 +129,17 @@ def update():
             releases = [
                 (data['tag_name'], data['body'])
                 for data in release
-                if data['tag_name'][1:] > ver][::-1]
+                if semver(data['tag_name'][1:]) > semver(ver)]
             updateAttempt = 3
         except:
             latest = '0'
-    if latest > ver:
+    if semver(latest) > semver(ver):
         print('Update available!      ')
         print(f'Latest Version: v{latest}\n')
         for release in releases:
             print(f'{release[0]}:\n{release[1]}\n')
         confirm = input(str('Update now? [Y/n] ')).upper()
-        if confirm == '' or confirm == 'Y':
+        if confirm != 'N':
             latestFilename = f'{proj} v{latest}.py'
             # Download latest version to cwd
             print(f'Downloading "{latestFilename}"...')
@@ -212,6 +197,21 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
 
     # Custom file GUI mode
     if message == '$gui':
+        try:
+            import win32gui, win32con
+        except:
+            print('\nError: unable to import "pypiwin32", this is needed for GUI mode')
+            confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
+            if confirm != 'N':
+                try:
+                    os.system('pip install pypiwin32 --user')
+                    os.system('cls')
+                    os.system('"'+str(os.path.basename(__file__))+'"')
+                    exit()
+                except:
+                    print('Failed to install "pypiwin32"\nPress enter to go back...')
+                    input()
+                    setupMessage()
         try:
             print('Please select a file from the File picker GUI')
             selectedFile, Filter, flags = win32gui.GetOpenFileNameW(
