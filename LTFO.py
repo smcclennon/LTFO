@@ -1,6 +1,6 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.0'
+ver = '5.0.4'
 proj = 'LTFO'
 
 
@@ -15,34 +15,7 @@ This is a friendly reminder that you should probably do that next time.'''
 # ----------------------------------------------------------------------------------------------
 
 
-print('Importing requirements...')
-try:
-    # Attempt to import requirements
-    import time, string, os, socket, getpass, urllib.request, json, win32gui, win32con
-    from ctypes import windll
-    from random import randint
-    from pathlib import Path
-    from shutil import copyfile
-except:
-    # Display error message on failure
-    print('\nError: one or more libraries could not be imported!'
-          f'Visit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
-    input()
-    exit()
 
-
-# Set console window title
-windll.kernel32.SetConsoleTitleW(f'{proj} - v{ver}')
-
-
-# Run a specific command
-def cmd(x):
-    os.system(str(x))
-
-
-# Pause the program for a specified amount of time
-def sleep(x):
-    time.sleep(x)
 
 
 # LTFO logo
@@ -52,12 +25,123 @@ asciiRaw = f'''██╗  ████████╗███████╗ �
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝'''
-
-
+# Run a specific command
+def cmd(x):
+    os.system(str(x))
+# Pause the program for a specified amount of time
+def sleep(x):
+    time.sleep(x)
 # Clear the display
 def display():
     cmd('cls')
     print(asciiRaw)
+
+
+
+# -==========[ Update code ]==========-
+# Updater: Used to check for new releases on GitHub
+# github.com/smcclennon/Updater
+import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
+from distutils.version import LooseVersion as semver  # as semver for readability
+import urllib.request, json  # load and parse the GitHub API
+import platform  # Consistantly detect MacOS
+
+# Disable SSL certificate verification for MacOS (very bad practice, I know)
+# https://stackoverflow.com/a/55320961
+if platform.system() == 'Darwin':  # If MacOS
+    import ssl
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        # Legacy Python that doesn't verify HTTPS certificates by default
+        pass
+    else:
+        # Handle target environment that doesn't support HTTPS verification
+        ssl._create_default_https_context = _create_unverified_https_context
+proj = proj
+if os.name == 'nt':
+    import ctypes  # set Windows console window title
+    ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Checking for updates...')
+
+updateAttempt = 0  # Keep track of failed attempts
+display()
+print('Checking for updates...', end='\r')
+while updateAttempt < 3:  # Try to retry the update up to 3 times if an error occurs
+    updateAttempt = updateAttempt+1
+    try:
+        with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as internalAPI:
+            repo = []
+            for line in internalAPI.readlines():
+                repo.append(line.decode().strip())
+            apiLatest = repo[0]  # Latest release details
+            proj = repo[1]  # Project name
+            ddl = repo[2]  # Direct download link
+            apiReleases = repo[3]  # List of patch notes
+        with urllib.request.urlopen(apiLatest) as githubAPILatest:
+            data = json.loads(githubAPILatest.read().decode())
+            latest = data['tag_name'][1:]  # remove 'v' from version number (v1.2.3 -> 1.2.3)
+        del data  # Prevent overlapping variable data
+        release = json.loads(urllib.request.urlopen(  # Get latest patch notes
+            apiReleases).read().decode())
+        releases = [  # Store latest patch notes in a list
+            (data['tag_name'], data['body'])
+            for data in release
+            if semver(data['tag_name'][1:]) > semver(ver)]
+        updateAttempt = 3
+    except:  # If updating fails 3 times
+        latest = '0'
+if semver(latest) > semver(ver):
+    if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Update available: {ver} -> {latest}')
+    print('Update available!      ')
+    print(f'Latest Version: v{latest}\n')
+    for release in releases:
+        print(f'{release[0]}:\n{release[1]}\n')
+    confirm = input(str('Update now? [Y/n] ')).upper()
+    if confirm != 'N':
+        if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Installing updates...')
+        print(f'Downloading {proj} v{latest}...')
+        urllib.request.urlretrieve(ddl, os.path.basename(__file__))  # download the latest version to cwd
+        import sys; sys.stdout.flush()  # flush any prints still in the buffer
+        os.system('cls||clear')  # Clear console window
+        os.system(f'"{__file__}"' if os.name == 'nt' else f'python3 "{__file__}"')
+        import time; time.sleep(0.2)
+        quit()
+if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==')
+# -==========[ Update code ]==========-
+
+
+import os
+if os.name != 'nt':
+    print(f'{proj} currently only supports Windows, and we have no plans to expand support to Unix any time soon\ndue to our reliance on ctypes.windll')
+    print('\nHowever, this script will continue to recieve updates,\nincluding the possibility for Unix support in the future :)')
+    print(f'\nhttps://github.com/smcclennon/{proj}')
+    print('\nPress enter to exit')
+    input()
+    quit()
+print('Importing requirements...')
+try:
+    # Attempt to import requirements
+    import time, string, socket, getpass
+    from ctypes import windll
+    from random import randint
+    from pathlib import Path
+    from shutil import copyfile
+except:
+    # Display error message on failure
+    print('\nError: one or more libraries could not be imported!'
+          f'\nVisit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
+    input()
+    exit()
+
+
+
+# Set console window title
+windll.kernel32.SetConsoleTitleW(f'{proj} - v{ver}')
+
+
+
+
+
 
 
 # Prompt the user to choose what to do
@@ -88,65 +172,12 @@ This is a friendly reminder that you should probably do that next time.'''.forma
     'drive': '',
     'start': 0,
     'filesProcessed': 0,
-    'processDuration': 0
+    'processDuration': 0,
+    'status': 0
 }
 
 
-def update():
-    updateAttempt = 0
-    display()
-    print('Checking for updates...', end='\r')
-    try:  # Remove previous version if just updated
-        proj = options['proj']
-        with open(f'{proj}.tmp', 'r') as content_file:
-            oldFile = str(content_file.read())
-            # If the old version has the current filename, don't delete
-            if oldFile != os.path.basename(__file__):
-                os.remove(oldFile)
-        os.remove(f'{proj}.tmp')
-    except:
-        pass
-    while updateAttempt < 3:
-        updateAttempt = updateAttempt+1
-        try:
-            with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as url:
-                repo = []
-                for line in url.readlines():
-                    repo.append(line.decode().strip())
-                apiLatest = repo[0]  # Latest release details
-                proj = repo[1]  # Project name
-                ddl = repo[2]  # Direct download
-                apiReleases = repo[3]  # List of patch notes
-            with urllib.request.urlopen(apiLatest) as url:
-                data = json.loads(url.read().decode())
-                latest = data['tag_name'][1:]
-            del data  # Prevent overlapping variable data
-            release = json.loads(urllib.request.urlopen(
-                apiReleases).read().decode())
-            releases = [
-                (data['tag_name'], data['body'])
-                for data in release
-                if data['tag_name'] > ver][::-1]
-            updateAttempt = 3
-        except:
-            latest = '0'
-    if latest > ver:
-        print('Update available!      ')
-        print(f'Latest Version: v{latest}\n')
-        for release in releases:
-            print(f'{release[0]}:\n{release[1]}\n')
-        confirm = input(str('Update now? [Y/n] ')).upper()
-        if confirm == '' or confirm == 'Y':
-            latestFilename = f'{proj} v{latest}.py'
-            # Download latest version to cwd
-            print(f'Downloading "{latestFilename}"...')
-            urllib.request.urlretrieve(ddl, latestFilename)
-            # Write the current filename to LTFO.tmp
-            f = open(f'{proj}.tmp', 'w')
-            f.write(str(os.path.basename(__file__)))
-            f.close()
-            os.system(f'"{latestFilename}"')  # Open latest version
-            exit()
+
 
 
 def setupMessage():
@@ -194,6 +225,21 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
 
     # Custom file GUI mode
     if message == '$gui':
+        try:
+            import win32gui, win32con
+        except:
+            print('\nError: unable to import "pypiwin32", this is needed for GUI mode')
+            confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
+            if confirm != 'N':
+                try:
+                    os.system('pip install pypiwin32 --user')
+                    os.system('cls')
+                    os.system('"'+str(os.path.basename(__file__))+'"')
+                    exit()
+                except:
+                    print('Failed to install "pypiwin32"\nPress enter to go back...')
+                    input()
+                    setupMessage()
         try:
             print('Please select a file from the File picker GUI')
             selectedFile, Filter, flags = win32gui.GetOpenFileNameW(
@@ -339,16 +385,17 @@ def commitWrite():
     if confirm != rand:
         confirmWrite()
 
-    scriptnameEstimate = f'Removal Tool [{rand}'
-    filenameEstimate = f'READ_ME [{rand}'
     filePath = options['filePath']
 
-    removaltoolFilename = f'Removal Tool [{rand}].py'
     if options['messageType'] == '$File' or options['messageType'] == '$Copy':
         floodFilename = options['filename']
         filenameEstimate = options['filename']
         removaltoolFilename = f'Removal Tool [{floodFilename}].py'
         scriptnameEstimate = f'Removal Tool [{floodFilename}'
+    else:
+        scriptnameEstimate = f'Removal Tool [{rand}'
+        filenameEstimate = f'READ_ME [{rand}'
+        removaltoolFilename = f'{scriptnameEstimate}].py'
 
     # Removal instructions written to all READ_ME files
     removalMsg = f'''\n\n\n
@@ -379,7 +426,7 @@ i=0
 for x in Path(selectedDrive+':/').glob('**'):
         try:
             i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate, recursive=True):
+            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*', recursive=True):
                     os.remove(y)
                     print(str(i)+'. Deleted: '+str(y))
         except:
@@ -425,8 +472,11 @@ No files have been generated yet.
 =====================================================''')
                 options['processDuration'] = time.time() - options['start']
                 options['filesProcessed'] = i
-                f.close()
-                os.remove(f'{x}\\{filename}')
+                try:
+                    f.close()
+                    os.remove(f'{x}\\{filename}')
+                except:
+                    pass
                 confirm = input(str('Cancel the operation? [Y/n] ')).upper()
                 if confirm != 'N':
                     stats()
@@ -461,8 +511,7 @@ def stats():
     print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
          Press any key to exit...''')
     cmd('pause>nul')
-    exit()
-
+    options['status'] = 1
 
 # Debug = 0: Display a message and exit when an uncaught exception occurs
 # Debug = 1: Show error details & crash when an uncaught exception occurs
@@ -472,16 +521,15 @@ debug = 0
 # Run the script
 if debug == 0:
     try:
-        update()  # Check for updates
         setupMessage()  # Start at the setupMessage module
     except:
-        # Uncaught exception:
-        print(f'''\n\n\nAn error occured after {proj} successfully loaded.
-    Visit github.com/smcclennon/{proj} for support''')
-        windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
-    Visit github.com/smcclennon/{proj} for support.
-    Press OK to exit.''', f'{proj} v{ver}', 1)
+        if options['status'] == 0:
+            # Uncaught exception:
+            print(f'''\n\n\nAn error occured after {proj} successfully loaded.
+        Visit github.com/smcclennon/{proj} for support''')
+            windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
+        Visit github.com/smcclennon/{proj} for support.
+        Press OK to exit.''', f'{proj} v{ver}', 1)
         exit()
 elif debug == 1:
-    update()
     setupMessage()

@@ -27,7 +27,7 @@ Generated files include easy to follow instructions to remove all of the files c
 The script is designed to be ran from a USB drive, but you can also download the latest release directly onto the target machine.
 
 #### Requirements:
-- Python 3.5+ (On a USB* or on the target machine)
+- Python 3.6+ (On a USB* or on the target machine)
 - Windows 10
 
 *\*If you are planning to use a python install from the USB, please create a shortcut to run the script using Python on the flash drive.*
