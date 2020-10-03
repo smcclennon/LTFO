@@ -1,8 +1,17 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.4'
-proj = 'LTFO'
-proj_id = '1'
+data = {
+    "meta": {
+        "proj": "LTFO",
+        "ver": "5.0.4",
+        "proj_id": "1"
+    },
+    "setup": {
+        "os": "",
+        "import_status": 0,
+        "target_package": ""
+    }
+}
 
 
 # ----------------------------------------------------------------------------------------------
@@ -22,7 +31,7 @@ This is a friendly reminder that you should probably do that next time.'''
 # LTFO logo
 asciiRaw = f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
-██║     ██║   █████╗  ██║   ██║  v{ver}
+██║     ██║   █████╗  ██║   ██║  v{data["meta"]["ver"]}
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝'''
@@ -45,9 +54,9 @@ def update():
     # github.com/smcclennon/Updater
     updater = {
         "updater_ver": "2.0.0",
-        "proj": proj,
-        "proj_id": proj_id,
-        "current_ver": ver
+        "proj": data["meta"]["proj"],
+        "proj_id": data["meta"]["proj_id"],
+        "current_ver": data["meta"]["ver"]
     }
 
     import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
@@ -131,36 +140,52 @@ def update():
 update()
 
 
-import os
+import subprocess, sys, os, traceback
+
+def install_package(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--user"])
+
+def import_rescue(e):
+    print(e)
+    if 'No module named' in str(e):
+        unknown_module = str(e).replace("'", "").replace("No module named ", "")
+        print(f'\nError: unable to import "{unknown_module}"')
+        if data["setup"]["import_status"] == -1:
+            input('Press enter to exit...')
+            exit()
+        print('Installing dependancies...')
+        try:
+            install_package(unknown_module)
+        except Exception as e:
+            print(f'\n{e}\n\nFailed to install "{unknown_module}"\nPress enter to exit...')
+            input()
+            exit()
+    else:
+        print(f'{e}\nUnknown error occured')
+        input('Press enter to exit...')
+        exit()
+
 if os.name != 'nt':
-    print(f'{proj} currently only supports Windows, and we have no plans to expand support to Unix any time soon\ndue to our reliance on ctypes.windll')
-    print('\nHowever, this script will continue to recieve updates,\nincluding the possibility for Unix support in the future :)')
-    print(f'\nhttps://github.com/smcclennon/{proj}')
+    print(f'{data["meta"]["proj"]} currently only supports Windows, and we have no plans to expand support to Linux any time soon\ndue to our reliance on ctypes.windll for listing drive names.')
+    print('\nHowever, this script will continue to recieve updates, including the possibility for Linux support in the future :)\nFeel free to help contribute towards Linux support.')
+    print(f'\nhttps://github.com/smcclennon/{data["meta"]["proj"]}')
     print('\nPress enter to exit')
     input()
     quit()
+
 print('Importing requirements...')
-try:
-    # Attempt to import requirements
-    import time, string, socket, getpass, traceback
-    from ctypes import windll
-    from random import randint
-    from pathlib import Path
-    from shutil import copyfile
-except:
-    # Display error message on failure
-    print('\nError: one or more libraries could not be imported!'
-          f'\nVisit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
-    input()
-    exit()
-
-
-
-
-
-
-
-
+data["setup"]["import_status"] = 0
+while data["setup"]["import_status"] != 1:
+    try:
+        data["setup"]["import_status"] = 0
+        import time, string, socket, getpass, traceback
+        from ctypes import windll
+        from random import randint
+        from pathlib import Path
+        from shutil import copyfile
+        data["setup"]["import_status"] = 1
+    except Exception as e:
+        import_rescue(e)
 
 
 # Prompt the user to choose what to do
@@ -169,7 +194,7 @@ def confirmChoice():
         choice = input('Confirm? [Y/n] ').upper()
         if choice == "" or choice == "Y":
             return True
-        else:
+        elif choice == "N":
             return False
 
 
@@ -181,7 +206,7 @@ variables = {
     'date': time.strftime('%d.%m.%y')
 }
 options = {
-    'proj': proj,
+    'proj': data["meta"]["proj"],
     'message': '',  # Store message for file creation
     'messageBackup': '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''.format(**variables),
@@ -212,7 +237,7 @@ Date: {date}'''.format(**variables))
     print('\nEnter your custom message. Leave blank to use the default message.')
     try:
         customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
-    except:
+    except KeyError:
         print('Invalid variable. Please try again.')
         sleep(1)
         setupMessage()
@@ -248,23 +273,23 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
             import win32gui, win32con
         except:
             print('\nError: unable to import "pypiwin32", this is needed for GUI mode')
-            confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
-            if confirm != 'N':
-                try:
-                    os.system('pip install pypiwin32 --user')
-                    os.system('cls')
-                    os.system('"'+str(os.path.basename(__file__))+'"')
-                    exit()
-                except:
-                    print('Failed to install "pypiwin32"\nPress enter to go back...')
-                    input()
-                    setupMessage()
+            print('Attempting to install "pypiwin32"...')
+            try:
+                os.system('pip install pypiwin32 --user')
+                os.system('cls')
+                os.system('"'+str(os.path.basename(__file__))+'"')
+                exit()
+            except:
+                print('Failed to install "pypiwin32"\nPress enter to go back...')
+                input()
+                setupMessage()
+                exit()
         try:
             print('Please select a file from the File picker GUI')
             selectedFile, Filter, flags = win32gui.GetOpenFileNameW(
                 InitialDir=os.environ['temp'],
                 Flags=win32con.OFN_EXPLORER,
-                Title=f'{proj} v{ver}: Select a file to use for flooding',
+                Title=f'{data["meta"]["proj"]} v{data["meta"]["ver"]}: Select a file to use for flooding',
                 Filter='All files\0*.*\0',
                 FilterIndex=0)
             display()
@@ -430,9 +455,9 @@ Manual:
 3. Select everything and delete'''
 
     # Removal script created at the root of the selected drive
-    removalScript = f'''#{proj}: Removal Tool
+    removalScript = f'''#{data["meta"]["proj"]}: Removal Tool
 #github.com/smcclennon/LTFO
-ver="{ver}"
+ver="{data["meta"]["ver"]}"
 rand="{rand}"
 selectedDrive="{selectedDrive}"
 import os,glob
@@ -529,14 +554,18 @@ def stats():
          Press any key to exit...''')
     cmd('pause>nul')
     options['status'] = 1
+    exit()
 
 
 
 # Run the script
 try:
     setupMessage()  # Start at the setupMessage module
+except KeyboardInterrupt:
+    print('KeyboardInterrupt. Goodbye!')
+    exit()
 except:
     traceback.print_exc()
     if options['status'] == 0:
-        print(f'\n\n\nAn error occured after {proj} successfully loaded.\nVisit github.com/smcclennon/{proj} for support')
+        print(f'\n\n\nAn error occured after {data["meta"]["proj"]} successfully loaded.\nVisit github.com/smcclennon/{data["meta"]["proj"]} for support')
     input()
