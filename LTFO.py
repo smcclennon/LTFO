@@ -214,7 +214,7 @@ variables = {
 options = {
     'proj': data["meta"]["proj"],
     'message': '',  # Store message for file creation
-    'messageBackup': '''You forgot to logout of {computer}!
+    'message_backup': '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''.format(**variables),
     'message_type': '',
     'filename': '',
@@ -241,13 +241,13 @@ Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
     print('File selection: $gui, $path/to/file')
     print('\nEnter your custom message. Leave blank to use the default message.')
-    customMessage = input('\n> ').replace('\\n', '\n')
+    custom_message = input('\n> ').replace('\\n', '\n')
     try:
-        customMessage = customMessage.format(**variables)
+        custom_message = custom_message.format(**variables)
     except (KeyError, ValueError) as e:
         print(f'Invalid variable: {e}, ignoring')
         sleep(1)
-    options['message'] = customMessage
+    options['message'] = custom_message
     options['message_type'] = 'Custom'
     confirmMessage()
 
@@ -255,17 +255,17 @@ Date: {date}'''.format(**variables))
 def confirmMessage():
     support = 1
     display()
-    customMessage = options['message']
-    messageBackup = options['messageBackup']
-    if customMessage == '':
+    custom_message = options['message']
+    message_backup = options['message_backup']
+    if custom_message == '':
         try:
             options['message'] = configureMessage.format(**variables)
-            if options['message'] == options['messageBackup']:
+            if options['message'] == options['message_backup']:
                 options['message_type'] = 'Default'
             else:
                 options['message_type'] = 'Config'
         except:
-            options['message'] = options['messageBackup']
+            options['message'] = options['message_backup']
             options['message_type'] = 'Backup'
             print('''Error: Unable to parse variables used in "configureMessage".
 To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
