@@ -466,26 +466,29 @@ Manual:
 ver="{data["meta"]["ver"]}"
 rand="{rand}"
 selected_drive="{selected_drive}"
-import os,glob
+import os,glob,time
 from pathlib import Path
+message_type = "{options['message_type']}"
 filename_estimate="{filename_estimate}"
+if message_type != "$File":
+    filename_estimate="*"+filename_estimate+"*"
 scriptname_estimate="{scriptname_estimate}"
 i=0
-for x in Path(selected_drive+':/').glob('**'):
-        try:
-            i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filename_estimate+'*', recursive=True):
-                    os.remove(y)
-                    print(str(i)+'. Deleted: '+str(y))
-        except:
-            print('[FAILED]: '+str(x))
+for folder in Path(selected_drive+':/').glob('**'):
+    try:
+        i+=1
+        for File in glob.glob(str(folder)+'\\\\'+filename_estimate, recursive=True):
+                os.remove(File)
+                print(str(i)+'. Deleted: '+str(File))
+    except:
+        print('[FAILED]: '+str(File))
 try:
     i=i+1
-    for y in glob.glob(str(selected_drive)+':\\\\'+scriptname_estimate+'*.py', recursive=True):
-            os.remove(y)
-            print(str(i)+'. Deleted: '+str(y))
+    for File in glob.glob(str(selected_drive)+':\\\\'+scriptname_estimate+'*.py', recursive=True):
+            os.remove(File)
+            print(str(i)+'. Deleted: '+str(File))
 except:
-    print('[FAILED]: '+str(x))
+    print('[FAILED]: '+str(File))
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
