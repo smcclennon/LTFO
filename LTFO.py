@@ -35,19 +35,10 @@ asciiRaw = f'''██╗  ████████╗███████╗ �
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝'''
-# Run a specific command
-def cmd(x):
-    os.system(str(x))
-# Pause the program for a specified amount of time
-def sleep(x):
-    time.sleep(x)
-# Clear the display
-def display():
-    cmd('cls')
-    print(asciiRaw)
 
 
 
+print(asciiRaw)
 def update():
     # -==========[ Update code ]==========-
     # Updater: Used to check for new releases on GitHub
@@ -147,6 +138,15 @@ update()
 
 
 import subprocess, sys, os, traceback
+
+# Shortcut for time.sleep
+def sleep(x):
+    time.sleep(x)
+
+# Clear the display
+def display():
+    os.system('cls')
+    print(asciiRaw)
 
 def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--user"])
@@ -558,7 +558,7 @@ def stats():
     print(asciiRaw)
     print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
          Press any key to exit...''')
-    cmd('pause>nul')
+    os.system('pause>nul')
     options['status'] = 1
     exit()
 
