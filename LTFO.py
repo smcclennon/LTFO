@@ -241,12 +241,12 @@ Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
     print('File selection: $gui, $path/to/file')
     print('\nEnter your custom message. Leave blank to use the default message.')
+    customMessage = input('\n> ').replace('\\n', '\n')
     try:
-        customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
-    except KeyError:
-        print('Invalid variable. Please try again.')
+        customMessage = customMessage.format(**variables)
+    except (KeyError, ValueError) as e:
+        print(f'Invalid variable: {e}, ignoring')
         sleep(1)
-        setupMessage()
     options['message'] = customMessage
     options['message_type'] = 'Custom'
     confirmMessage()
@@ -578,4 +578,3 @@ except:
     if options['status'] == 0:
         traceback.print_exc()
         print(f'\n\n\nAn error occured after {data["meta"]["proj"]} successfully loaded.\nVisit github.com/smcclennon/{data["meta"]["proj"]} for support')
-        input()
