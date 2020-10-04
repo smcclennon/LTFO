@@ -139,9 +139,6 @@ update()
 
 import subprocess, sys, os, traceback, time
 
-# Shortcut for time.sleep
-def sleep(x):
-    time.sleep(x)
 
 # Clear the display
 def display():
@@ -246,7 +243,7 @@ Date: {date}'''.format(**variables))
         custom_message = custom_message.format(**variables)
     except (KeyError, ValueError) as e:
         print(f'Invalid variable: {e}. No variables have been formatted.')
-        sleep(1)
+        time.sleep(1)
     options['message'] = custom_message
     options['message_type'] = 'Custom'
     confirmMessage()
@@ -363,7 +360,7 @@ def setup_drive():
     print('Available Drives:')
     for index, drive in enumerate(driveArray):
         print(f'{index + 1}. {drive}')
-        sleep(0.1)
+        time.sleep(0.1)
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
     selected_drive = input(str('> ')).upper()
@@ -371,7 +368,7 @@ def setup_drive():
         setupMessage()
     if not selected_drive in driveArray:
         print('Specified drive not found. Please try again.')
-        sleep(1)
+        time.sleep(1)
         setup_drive()
     else:
         options['drive'] = selected_drive
@@ -383,9 +380,9 @@ def confirm_drive():
     selected_drive = options['drive']
     for character in f'Selected Drive: {selected_drive}':
         print(character, end='', flush=True)
-        sleep(0.01)
+        time.sleep(0.01)
     print('')
-    sleep(0.2)
+    time.sleep(0.2)
     confirm = confirm_choice()
     if confirm:
         confirm_write()
@@ -410,12 +407,12 @@ def confirm_write():
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
-    sleep(0.4)
+    time.sleep(0.4)
     for character in f'\nYou are about to flood all subdirectories in [{selected_drive}:\\]!':
         print(character, end='', flush=True)
-        sleep(0.01)
+        time.sleep(0.01)
     print('')
-    sleep(0.2)
+    time.sleep(0.2)
     confirm = confirm_choice()
     if confirm:
         commit_write()
@@ -435,15 +432,15 @@ def commit_write():
     print(f'\nSelected Drive: {selected_drive}\nMessage Type: {message_type}\n\n')
     for character in 'To begin flooding, ':
         print(character, end='', flush=True)
-        sleep(0.01)
-    sleep(0.2)
+        time.sleep(0.01)
+    time.sleep(0.2)
     for character in 'please enter the confirmation code ':
         print(character, end='', flush=True)
-        sleep(0.01)
-    sleep(0.2)
+        time.sleep(0.01)
+    time.sleep(0.2)
     for character in f'{rand}.':
         print(character, end='', flush=True)
-        sleep(0.08)
+        time.sleep(0.08)
     print('')
     confirm = input('\n>>> ')
     try:
