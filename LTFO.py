@@ -52,16 +52,19 @@ def update():
     # -==========[ Update code ]==========-
     # Updater: Used to check for new releases on GitHub
     # github.com/smcclennon/Updater
+
+    # ===[ Constant Variables ]===
     updater = {
-        "updater_ver": "2.0.0",
         "proj": data["meta"]["proj"],
         "proj_id": data["meta"]["proj_id"],
         "current_ver": data["meta"]["ver"]
     }
 
+    # ===[ Changing code ]===
+    updater["updater_ver"] = "2.0.2"
     import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
     from distutils.version import LooseVersion as semver  # as semver for readability
-    import urllib.request, json  # load and parse the GitHub API
+    import urllib.request, json  # load and parse the GitHub API, download updates
     import platform  # Consistantly detect MacOS
     import traceback  # Printing errors
 
@@ -103,7 +106,7 @@ def update():
                 print('Error encountered whilst checking for updates. Full traceback below...')
                 traceback.print_exc()
 
-    if semver(github_releases[0]['tag_name'].replace('v', '')) > semver(updater["current_ver"]):
+    if github_releases != [] and semver(github_releases[0]['tag_name'].replace('v', '')) > semver(updater["current_ver"]):
         print('Update available!      ')
         print(f'Latest Version: {github_releases[0]["tag_name"]}\n')
 
@@ -122,7 +125,10 @@ def update():
         for release in changelog[::-1]:  # Step backwards, print latest patch notes last
             print(f'{release[0]}:\n{release[1]}\n')
 
-        confirm = input(str('Update now? [Y/n] ')).upper()
+        try:
+            confirm = input(str('Update now? [Y/n] ')).upper()
+        except KeyboardInterrupt:
+            confirm = 'N'
         if confirm != 'N':
             print(f'Downloading new file...')
             urllib.request.urlretrieve(update_api["project"][updater["proj_id"]]["github_api"]["latest_release"]["release_download"], os.path.basename(__file__)+'.update_tmp')  # download the latest version to cwd
