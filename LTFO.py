@@ -363,6 +363,7 @@ def setup_drive():
     print('Available Drives:')
     for index, drive in enumerate(driveArray):
         print(f'{index + 1}. {drive}')
+        sleep(0.1)
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
     selected_drive = input(str('> ')).upper()
@@ -380,8 +381,11 @@ def setup_drive():
 def confirm_drive():
     display()
     selected_drive = options['drive']
-    print(f'Selected Drive: {selected_drive}')
-    time.sleep(0.5)
+    for character in f'Selected Drive: {selected_drive}':
+        print(character, end='', flush=True)
+        sleep(0.01)
+    print('')
+    sleep(0.2)
     confirm = confirm_choice()
     if confirm:
         confirm_write()
@@ -406,9 +410,12 @@ def confirm_write():
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
-    time.sleep(1)
-    print(f'\nYou are about to flood all subdirectories in [{selected_drive}:\\]!')
-    time.sleep(0.5)
+    sleep(0.4)
+    for character in f'\nYou are about to flood all subdirectories in [{selected_drive}:\\]!':
+        print(character, end='', flush=True)
+        sleep(0.01)
+    print('')
+    sleep(0.2)
     confirm = confirm_choice()
     if confirm:
         commit_write()
@@ -425,7 +432,19 @@ def commit_write():
     selected_drive = options['drive']
     message_type = options['message_type']
 
-    print(f'\nSelected Drive: {selected_drive}\nMessage Type: {message_type}\n\nTo begin flooding, please enter the confirmation code {rand}.')
+    print(f'\nSelected Drive: {selected_drive}\nMessage Type: {message_type}\n\n')
+    for character in 'To begin flooding, ':
+        print(character, end='', flush=True)
+        sleep(0.01)
+    sleep(0.2)
+    for character in 'please enter the confirmation code ':
+        print(character, end='', flush=True)
+        sleep(0.01)
+    sleep(0.2)
+    for character in f'{rand}.':
+        print(character, end='', flush=True)
+        sleep(0.08)
+    print('')
     confirm = input('\n>>> ')
     try:
         confirm = int(confirm)
