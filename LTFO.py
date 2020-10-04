@@ -571,7 +571,7 @@ except KeyboardInterrupt:
     print('KeyboardInterrupt. Goodbye!')
     exit()
 except:
-    traceback.print_exc()
     if options['status'] == 0:
+        traceback.print_exc()
         print(f'\n\n\nAn error occured after {data["meta"]["proj"]} successfully loaded.\nVisit github.com/smcclennon/{data["meta"]["proj"]} for support')
-    input()
+        input()
