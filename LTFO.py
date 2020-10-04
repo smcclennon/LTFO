@@ -29,7 +29,7 @@ This is a friendly reminder that you should probably do that next time.'''
 
 
 # LTFO logo
-asciiRaw = f'''██╗  ████████╗███████╗ ██████╗
+ltfo_unicode_text = f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
 ██║     ██║   █████╗  ██║   ██║  v{data["meta"]["ver"]}
 ██║     ██║   ██╔══╝  ██║   ██║
@@ -38,7 +38,7 @@ asciiRaw = f'''██╗  ████████╗███████╗ �
 
 
 
-print(asciiRaw)
+print(ltfo_unicode_text)
 def update():
     # -==========[ Update code ]==========-
     # Updater: Used to check for new releases on GitHub
@@ -146,7 +146,7 @@ def sleep(x):
 # Clear the display
 def display():
     os.system('cls')
-    print(asciiRaw)
+    print(ltfo_unicode_text)
 
 def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--user"])
@@ -195,7 +195,7 @@ while data["setup"]["import_status"] != 1:
 
 
 # Prompt the user to choose what to do
-def confirmChoice():
+def confirm_choice():
     while True:
         choice = input('Confirm? [Y/n] ').upper()
         if choice == "" or choice == "Y":
@@ -216,13 +216,13 @@ options = {
     'message': '',  # Store message for file creation
     'messageBackup': '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''.format(**variables),
-    'messageType': '',
+    'message_type': '',
     'filename': '',
-    'filePath': '',
+    'file_path': '',
     'drive': '',
     'start': 0,
-    'filesProcessed': 0,
-    'processDuration': 0,
+    'files_processed': 0,
+    'process_duration': 0,
     'status': 0
 }
 
@@ -248,7 +248,7 @@ Date: {date}'''.format(**variables))
         sleep(1)
         setupMessage()
     options['message'] = customMessage
-    options['messageType'] = 'Custom'
+    options['message_type'] = 'Custom'
     confirmMessage()
 
 
@@ -261,12 +261,12 @@ def confirmMessage():
         try:
             options['message'] = configureMessage.format(**variables)
             if options['message'] == options['messageBackup']:
-                options['messageType'] = 'Default'
+                options['message_type'] = 'Default'
             else:
-                options['messageType'] = 'Config'
+                options['message_type'] = 'Config'
         except:
             options['message'] = options['messageBackup']
-            options['messageType'] = 'Backup'
+            options['message_type'] = 'Backup'
             print('''Error: Unable to parse variables used in "configureMessage".
 To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
 ''')
@@ -299,15 +299,15 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
                 Filter='All files\0*.*\0',
                 FilterIndex=0)
             display()
-            options['filePath'] = selectedFile
-            options['messageType'] = '$File'
-            options['filename'] = os.path.basename(options['filePath'])
+            options['file_path'] = selectedFile
+            options['message_type'] = '$File'
+            options['filename'] = os.path.basename(options['file_path'])
             try:
-                with open(options['filePath'], 'r') as fileContents:
-                    options['message'] = fileContents.read()
+                with open(options['file_path'], 'r') as file_contents:
+                    options['message'] = file_contents.read()
             except:
                 options['message'] = 'Preview unavailable: Unsupported filetype'
-                options['messageType'] = '$Copy'
+                options['message_type'] = '$Copy'
             # Attempt to load variables
             try:
                 options['message'] = options['message'].format(**variables)
@@ -321,16 +321,16 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
     elif message[0] == '$':
         try:
             if os.path.exists(os.path.join(os.path.dirname(__file__), message[1:])):
-                options['filePath'] = os.path.join(
+                options['file_path'] = os.path.join(
                     os.path.dirname(__file__), message[1:])
-                options['messageType'] = '$File'
-                options['filename'] = os.path.basename(options['filePath'])
+                options['message_type'] = '$File'
+                options['filename'] = os.path.basename(options['file_path'])
                 try:
-                    with open(options['filePath'], 'r') as fileContents:
-                        options['message'] = fileContents.read()
+                    with open(options['file_path'], 'r') as file_contents:
+                        options['message'] = file_contents.read()
                 except:
                     options['message'] = 'Preview unavailable: Unsupported filetype'
-                    options['messageType'] = '$Copy'
+                    options['message_type'] = '$Copy'
                 #Attempt to load variables
                 try:
                     options['message'] = options['message'].format(**variables)
@@ -339,20 +339,20 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
         except:
             setupMessage()
     message = options['message']
-    messageType = options['messageType']
+    message_type = options['message_type']
     filename = options['filename']
-    print(f'Message Type: {messageType}')
-    if messageType == '$File' or messageType == '$Copy':
+    print(f'Message Type: {message_type}')
+    if message_type == '$File' or message_type == '$Copy':
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
-    confirm = confirmChoice()
+    confirm = confirm_choice()
     if confirm:
-        setupDrive()
+        setup_drive()
     else:
         setupMessage()
 
 
-def setupDrive():
+def setup_drive():
     display()
     driveArray = []
     bitmask = windll.kernel32.GetLogicalDrives()
@@ -365,98 +365,98 @@ def setupDrive():
         print(f'{index + 1}. {drive}')
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
-    selectedDrive = input(str('> ')).upper()
-    if selectedDrive == '':
+    selected_drive = input(str('> ')).upper()
+    if selected_drive == '':
         setupMessage()
-    if not selectedDrive in driveArray:
+    if not selected_drive in driveArray:
         print('Specified drive not found. Please try again.')
         sleep(1)
-        setupDrive()
+        setup_drive()
     else:
-        options['drive'] = selectedDrive
-        confirmDrive()
+        options['drive'] = selected_drive
+        confirm_drive()
 
 
-def confirmDrive():
+def confirm_drive():
     display()
-    selectedDrive = options['drive']
-    print(f'Selected Drive: {selectedDrive}')
+    selected_drive = options['drive']
+    print(f'Selected Drive: {selected_drive}')
     time.sleep(0.5)
-    confirm = confirmChoice()
+    confirm = confirm_choice()
     if confirm:
-        confirmWrite()
+        confirm_write()
     else:
-        setupDrive()
+        setup_drive()
 
 
-def confirmWrite():
+def confirm_write():
     display()
     message = options['message']
-    messageType = options['messageType']
-    selectedDrive = options['drive']
+    message_type = options['message_type']
+    selected_drive = options['drive']
 
     print('Computer: {computer}'.format(**variables))
     print('Username: {username}'.format(**variables))
 
     print(f'Selected Drive: {options["drive"]}')
 
-    print(f'Message Type: {messageType}')
-    if messageType == '$File' or messageType == '$Copy':
+    print(f'Message Type: {message_type}')
+    if message_type == '$File' or message_type == '$Copy':
         filename = options['filename']
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
     time.sleep(1)
-    print(f'\nYou are about to flood all subdirectories in [{selectedDrive}:\\]!')
+    print(f'\nYou are about to flood all subdirectories in [{selected_drive}:\\]!')
     time.sleep(0.5)
-    confirm = confirmChoice()
+    confirm = confirm_choice()
     if confirm:
-        commitWrite()
+        commit_write()
     else:
-        setupDrive()
+        setup_drive()
 
 
-def commitWrite():
+def commit_write():
     display()
 
     # Create a random number for confirmation and filenames
     rand = randint(10000, 99999)
-    customMsg = options['message']
-    selectedDrive = options['drive']
-    messageType = options['messageType']
+    custom_msg = options['message']
+    selected_drive = options['drive']
+    message_type = options['message_type']
 
-    print(f'\nSelected Drive: {selectedDrive}\nMessage Type: {messageType}\n\nTo begin flooding, please enter the confirmation code {rand}.')
+    print(f'\nSelected Drive: {selected_drive}\nMessage Type: {message_type}\n\nTo begin flooding, please enter the confirmation code {rand}.')
     confirm = input('\n>>> ')
     try:
         confirm = int(confirm)
     except:
-        confirmWrite()
+        confirm_write()
     i = 0
     if confirm != rand:
-        confirmWrite()
+        confirm_write()
 
-    filePath = options['filePath']
+    file_path = options['file_path']
 
-    if options['messageType'] == '$File' or options['messageType'] == '$Copy':
-        floodFilename = options['filename']
-        filenameEstimate = options['filename']
-        removaltoolFilename = f'Removal Tool [{floodFilename}].py'
-        scriptnameEstimate = f'Removal Tool [{floodFilename}'
+    if options['message_type'] == '$File' or options['message_type'] == '$Copy':
+        flood_filename = options['filename']
+        filename_estimate = options['filename']
+        removal_tool_filename = f'Removal Tool [{flood_filename}].py'
+        scriptname_estimate = f'Removal Tool [{flood_filename}'
     else:
-        scriptnameEstimate = f'Removal Tool [{rand}'
-        filenameEstimate = f'READ_ME [{rand}'
-        removaltoolFilename = f'{scriptnameEstimate}].py'
+        scriptname_estimate = f'Removal Tool [{rand}'
+        filename_estimate = f'READ_ME [{rand}'
+        removal_tool_filename = f'{scriptname_estimate}].py'
 
     # Removal instructions written to all READ_ME files
-    removalMsg = f'''\n\n\n
+    removal_msg = f'''\n\n\n
 Instructions to remove the files:
 
 Automatic:
-1. Navigate to "{selectedDrive}:\\"
+1. Navigate to "{selected_drive}:\\"
 2. Run "Removal Tool [{rand}].py"
 
 Manual:
-1. Navigate to "{selectedDrive}:\\"
+1. Navigate to "{selected_drive}:\\"
 2. Search for "READ_ME [{rand}]"
 3. Select everything and delete'''
 
@@ -465,23 +465,23 @@ Manual:
 #github.com/smcclennon/LTFO
 ver="{data["meta"]["ver"]}"
 rand="{rand}"
-selectedDrive="{selectedDrive}"
+selected_drive="{selected_drive}"
 import os,glob
 from pathlib import Path
-filenameEstimate="{filenameEstimate}"
-scriptnameEstimate="{scriptnameEstimate}"
+filename_estimate="{filename_estimate}"
+scriptname_estimate="{scriptname_estimate}"
 i=0
-for x in Path(selectedDrive+':/').glob('**'):
+for x in Path(selected_drive+':/').glob('**'):
         try:
             i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*', recursive=True):
+            for y in glob.glob(str(x)+'\\\\*'+filename_estimate+'*', recursive=True):
                     os.remove(y)
                     print(str(i)+'. Deleted: '+str(y))
         except:
             print('[FAILED]: '+str(x))
 try:
     i=i+1
-    for y in glob.glob(str(selectedDrive)+':\\\\'+scriptnameEstimate+'*.py', recursive=True):
+    for y in glob.glob(str(selected_drive)+':\\\\'+scriptname_estimate+'*.py', recursive=True):
             os.remove(y)
             print(str(i)+'. Deleted: '+str(y))
 except:
@@ -489,16 +489,16 @@ except:
 print('\\n\\nFile cleanup complete!')
 os.system('timeout 3')'''
 
-    messageType = options['messageType']
+    message_type = options['message_type']
     print('\nCreating files...')
 
     options['start'] = time.time()  # Take note of the current time
-    for x in Path(selectedDrive+':/').glob('**'):
-        if options['messageType'] != '$File' and options['messageType'] != '$Copy':
-            floodFilename = f'READ_ME [{rand}] [#{i}].txt'
+    for x in Path(selected_drive+':/').glob('**'):
+        if options['message_type'] != '$File' and options['message_type'] != '$Copy':
+            flood_filename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
-                filename = removaltoolFilename
+                filename = removal_tool_filename
                 f = open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
                 f.close()
@@ -518,8 +518,8 @@ cancel the operation!
 
 No files have been generated yet.
 =====================================================''')
-                options['processDuration'] = time.time() - options['start']
-                options['filesProcessed'] = i
+                options['process_duration'] = time.time() - options['start']
+                options['files_processed'] = i
                 try:
                     f.close()
                     os.remove(f'{x}\\{filename}')
@@ -530,33 +530,33 @@ No files have been generated yet.
                     stats()
 
         try:  # Create the READ_ME files
-            filename = floodFilename
-            if messageType != '$Copy':
+            filename = flood_filename
+            if message_type != '$Copy':
                 f = open(str(x)+'\\'+filename, 'w')
                 msg = options['message']
-                if messageType != '$File':
-                    f.write(msg+removalMsg)
-                elif messageType == '$File':
+                if message_type != '$File':
+                    f.write(msg+removal_msg)
+                elif message_type == '$File':
                     f.write(msg)
                 f.close()
-            if messageType == '$Copy':
-                copyfile(f'{filePath}', f'{x}\\{filename}')
+            if message_type == '$Copy':
+                copyfile(f'{file_path}', f'{x}\\{filename}')
             i = i+1
             print(f'{i}. Created: {x}\\{filename}')
         except Exception as e:
             print(f'[FAILED]: {x}\\{filename}')
             print(e)
-    options['processDuration'] = time.time() - options['start']
-    options['filesProcessed'] = i
+    options['process_duration'] = time.time() - options['start']
+    options['files_processed'] = i
     stats()
 
 
 def stats():
-    filesProcessed = options['filesProcessed']
-    processDuration = options['processDuration']
+    files_processed = options['files_processed']
+    process_duration = options['process_duration']
     print('\n')
-    print(asciiRaw)
-    print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
+    print(ltfo_unicode_text)
+    print(f'''Created {files_processed} files in {(round(process_duration, 2))} seconds!
          Press any key to exit...''')
     os.system('pause>nul')
     options['status'] = 1
