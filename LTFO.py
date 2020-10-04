@@ -1,7 +1,17 @@
 # Log TF Out
 # github.com/smcclennon/LTFO
-ver = '5.0.4'
-proj = 'LTFO'
+data = {
+    "meta": {
+        "proj": "LTFO",
+        "ver": "5.1.0",
+        "proj_id": "1"
+    },
+    "setup": {
+        "os": "",
+        "import_status": 0,
+        "target_package": ""
+    }
+}
 
 
 # ----------------------------------------------------------------------------------------------
@@ -19,138 +29,175 @@ This is a friendly reminder that you should probably do that next time.'''
 
 
 # LTFO logo
-asciiRaw = f'''██╗  ████████╗███████╗ ██████╗
+ltfo_unicode_text = f'''██╗  ████████╗███████╗ ██████╗
 ██║  ╚══██╔══╝██╔════╝██╔═══██╗
-██║     ██║   █████╗  ██║   ██║  v{ver}
+██║     ██║   █████╗  ██║   ██║  v{data["meta"]["ver"]}
 ██║     ██║   ██╔══╝  ██║   ██║
 ███████╗██║   ██║     ╚██████╔╝
 ╚══════╝╚═╝   ╚═╝      ╚═════╝'''
-# Run a specific command
-def cmd(x):
-    os.system(str(x))
-# Pause the program for a specified amount of time
-def sleep(x):
-    time.sleep(x)
+
+
+
+print(ltfo_unicode_text)
+def update():
+    # -==========[ Update code ]==========-
+    # Updater: Used to check for new releases on GitHub
+    # github.com/smcclennon/Updater
+
+    # ===[ Constant Variables ]===
+    updater = {
+        "proj": data["meta"]["proj"],
+        "proj_id": data["meta"]["proj_id"],
+        "current_ver": data["meta"]["ver"]
+    }
+
+    # ===[ Changing code ]===
+    updater["updater_ver"] = "2.0.3"
+    import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
+    from distutils.version import LooseVersion as semver  # as semver for readability
+    import urllib.request, json  # load and parse the GitHub API, download updates
+    import platform  # Consistantly detect MacOS
+    import traceback  # Printing errors
+
+    # Disable SSL certificate verification for MacOS (very bad practice, I know)
+    # https://stackoverflow.com/a/55320961
+    if platform.system() == 'Darwin':  # If MacOS
+        import ssl
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            # Legacy Python that doesn't verify HTTPS certificates by default
+            pass
+        else:
+            # Handle target environment that doesn't support HTTPS verification
+            ssl._create_default_https_context = _create_unverified_https_context
+
+    print('Checking for updates...', end='\r')
+    for i in range(3):  # Try to retry the update up to 3 times if an error occurs
+        try:
+            with urllib.request.urlopen("https://smcclennon.github.io/api/v2/update.json") as update_api:  # internal api
+                update_api = json.loads(update_api.read().decode())
+                #{'name': 'X', 'github_api': {'latest_release': {'info': 'https://api.github.com/repos/smcclennon/X/releases/latest', 'release_download': 'https://github.com/smcclennon/X/releases/latest/download/X.py'}, 'all_releases': {'info': 'https://api.github.com/repos/smcclennon/X/releases'}}}
+
+
+                updater["proj"] = update_api["project"][updater["proj_id"]]["name"]  # Project name
+            #with urllib.request.urlopen(update_api["project"][updater["proj_id"]]["github_api"]["latest_release"]["info"]) as github_api_latest:  # Latest release details
+            #    latest_info = json.loads(github_api_latest.read().decode())['tag_name'].replace('v', '')  # remove 'v' from version number (v1.2.3 -> 1.2.3)
+
+            github_releases = json.loads(urllib.request.urlopen(update_api["project"][updater["proj_id"]]["github_api"]["all_releases"]["info"]).read().decode())  # Get latest patch notes
+
+            break
+        except Exception as e:  # If updating fails 3 times
+            github_releases = {0: {'tag_name': 'v0.0.0'}}
+            if str(e) == "HTTP Error 404: Not Found":  # No releases found
+                break
+            elif str(e) == '<urlopen error [Errno 11001] getaddrinfo failed>':  # Cannot connect to website
+                break
+            else:
+                print('Error encountered whilst checking for updates. Full traceback below...')
+                traceback.print_exc()
+
+    if github_releases != [] and semver(github_releases[0]['tag_name'].replace('v', '')) > semver(updater["current_ver"]):
+        print('Update available!      ')
+        print(f'Latest Version: {github_releases[0]["tag_name"]}\n')
+
+        changelog = []
+        for release in github_releases:
+            try:
+                if semver(release['tag_name'].replace('v', '')) > semver(updater["current_ver"]):
+                    changelog.append([release["tag_name"], release["body"]])
+                else:
+                    break  # Stop parsing patch notes after the current version has been met
+            except TypeError:  # Incorrect version format + semver causes errors (Example: semver('Build-1'))
+                pass  # Skip/do nothing
+            except:  # Anything else, soft fail
+                traceback.print_exc()
+
+        for release in changelog[::-1]:  # Step backwards, print latest patch notes last
+            print(f'{release[0]}:\n{release[1]}\n')
+
+        try:
+            confirm = input(str('Update now? [Y/n] ')).upper()
+        except KeyboardInterrupt:
+            confirm = 'N'
+        if confirm != 'N':
+            print('Downloading new file...')
+            urllib.request.urlretrieve(update_api["project"][updater["proj_id"]]["github_api"]["latest_release"]["release_download"], os.path.basename(__file__)+'.update_tmp')  # download the latest version to cwd
+
+            os.rename(os.path.basename(__file__), os.path.basename(__file__)+'.old')
+            os.rename(os.path.basename(__file__)+'.update_tmp', os.path.basename(__file__))
+            os.remove(os.path.basename(__file__)+'.old')
+            os.system('cls||clear')  # Clear console window
+            if os.name == 'nt':
+                os.system('"'+os.path.basename(__file__)+'" 1')
+            else:
+                os.system('python3 "'+os.path.basename(__file__)+'" || python "'+os.path.basename(__file__)+'"')
+            quit()
+    # -==========[ Update code ]==========-
+update()
+
+
+import subprocess, sys, os, traceback, time
+
+
 # Clear the display
 def display():
-    cmd('cls')
-    print(asciiRaw)
+    os.system('cls')
+    print(ltfo_unicode_text)
 
+def install_package(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--user"])
 
-
-# -==========[ Update code ]==========-
-# Updater: Used to check for new releases on GitHub
-# github.com/smcclennon/Updater
-import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
-from distutils.version import LooseVersion as semver  # as semver for readability
-import urllib.request, json  # load and parse the GitHub API
-import platform  # Consistantly detect MacOS
-
-# Disable SSL certificate verification for MacOS (very bad practice, I know)
-# https://stackoverflow.com/a/55320961
-if platform.system() == 'Darwin':  # If MacOS
-    import ssl
-    try:
-        _create_unverified_https_context = ssl._create_unverified_context
-    except AttributeError:
-        # Legacy Python that doesn't verify HTTPS certificates by default
-        pass
+def import_rescue(e):
+    print(e)
+    if 'No module named' in str(e):
+        unknown_module = str(e).replace("'", "").replace("No module named ", "")
+        print(f'\nError: unable to import "{unknown_module}"')
+        if data["setup"]["import_status"] == -1:
+            input('Press enter to exit...')
+            exit()
+        print('Installing dependancies...')
+        try:
+            install_package(unknown_module)
+        except Exception as e:
+            print(f'\n{e}\n\nFailed to install "{unknown_module}"\nPress enter to exit...')
+            input()
+            exit()
     else:
-        # Handle target environment that doesn't support HTTPS verification
-        ssl._create_default_https_context = _create_unverified_https_context
-proj = proj
-if os.name == 'nt':
-    import ctypes  # set Windows console window title
-    ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Checking for updates...')
+        print(f'{e}\nUnknown error occured')
+        input('Press enter to exit...')
+        exit()
 
-updateAttempt = 0  # Keep track of failed attempts
-display()
-print('Checking for updates...', end='\r')
-while updateAttempt < 3:  # Try to retry the update up to 3 times if an error occurs
-    updateAttempt = updateAttempt+1
-    try:
-        with urllib.request.urlopen("https://smcclennon.github.io/update/api/1") as internalAPI:
-            repo = []
-            for line in internalAPI.readlines():
-                repo.append(line.decode().strip())
-            apiLatest = repo[0]  # Latest release details
-            proj = repo[1]  # Project name
-            ddl = repo[2]  # Direct download link
-            apiReleases = repo[3]  # List of patch notes
-        with urllib.request.urlopen(apiLatest) as githubAPILatest:
-            data = json.loads(githubAPILatest.read().decode())
-            latest = data['tag_name'][1:]  # remove 'v' from version number (v1.2.3 -> 1.2.3)
-        del data  # Prevent overlapping variable data
-        release = json.loads(urllib.request.urlopen(  # Get latest patch notes
-            apiReleases).read().decode())
-        releases = [  # Store latest patch notes in a list
-            (data['tag_name'], data['body'])
-            for data in release
-            if semver(data['tag_name'][1:]) > semver(ver)]
-        updateAttempt = 3
-    except:  # If updating fails 3 times
-        latest = '0'
-if semver(latest) > semver(ver):
-    if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Update available: {ver} -> {latest}')
-    print('Update available!      ')
-    print(f'Latest Version: v{latest}\n')
-    for release in releases:
-        print(f'{release[0]}:\n{release[1]}\n')
-    confirm = input(str('Update now? [Y/n] ')).upper()
-    if confirm != 'N':
-        if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==   Installing updates...')
-        print(f'Downloading {proj} v{latest}...')
-        urllib.request.urlretrieve(ddl, os.path.basename(__file__))  # download the latest version to cwd
-        import sys; sys.stdout.flush()  # flush any prints still in the buffer
-        os.system('cls||clear')  # Clear console window
-        os.system(f'"{__file__}"' if os.name == 'nt' else f'python3 "{__file__}"')
-        import time; time.sleep(0.2)
-        quit()
-if os.name == 'nt': ctypes.windll.kernel32.SetConsoleTitleW(f'   == {proj} v{ver} ==')
-# -==========[ Update code ]==========-
-
-
-import os
 if os.name != 'nt':
-    print(f'{proj} currently only supports Windows, and we have no plans to expand support to Unix any time soon\ndue to our reliance on ctypes.windll')
-    print('\nHowever, this script will continue to recieve updates,\nincluding the possibility for Unix support in the future :)')
-    print(f'\nhttps://github.com/smcclennon/{proj}')
+    print(f'{data["meta"]["proj"]} currently only supports Windows, and we have no plans to expand support to Linux any time soon\ndue to our reliance on ctypes.windll for listing drive names.')
+    print('\nHowever, this script will continue to recieve updates, including the possibility for Linux support in the future :)\nFeel free to help contribute towards Linux support.')
+    print(f'\nhttps://github.com/smcclennon/{data["meta"]["proj"]}')
     print('\nPress enter to exit')
     input()
     quit()
+
 print('Importing requirements...')
-try:
-    # Attempt to import requirements
-    import time, string, socket, getpass
-    from ctypes import windll
-    from random import randint
-    from pathlib import Path
-    from shutil import copyfile
-except:
-    # Display error message on failure
-    print('\nError: one or more libraries could not be imported!'
-          f'\nVisit github.com/smcclennon/{proj} for support\n\nPress enter to exit...')
-    input()
-    exit()
-
-
-
-# Set console window title
-windll.kernel32.SetConsoleTitleW(f'{proj} - v{ver}')
-
-
-
-
-
+data["setup"]["import_status"] = 0
+while data["setup"]["import_status"] != 1:
+    try:
+        data["setup"]["import_status"] = 0
+        import string, socket, getpass
+        from ctypes import windll
+        from random import randint
+        from pathlib import Path
+        from shutil import copyfile
+        data["setup"]["import_status"] = 1
+    except Exception as e:
+        import_rescue(e)
 
 
 # Prompt the user to choose what to do
-def confirmChoice():
+def confirm_choice():
     while True:
         choice = input('Confirm? [Y/n] ').upper()
         if choice == "" or choice == "Y":
             return True
-        else:
+        elif choice == "N":
             return False
 
 
@@ -162,17 +209,17 @@ variables = {
     'date': time.strftime('%d.%m.%y')
 }
 options = {
-    'proj': proj,
+    'proj': data["meta"]["proj"],
     'message': '',  # Store message for file creation
-    'messageBackup': '''You forgot to logout of {computer}!
+    'message_backup': '''You forgot to logout of {computer}!
 This is a friendly reminder that you should probably do that next time.'''.format(**variables),
-    'messageType': '',
+    'message_type': '',
     'filename': '',
-    'filePath': '',
+    'file_path': '',
     'drive': '',
     'start': 0,
-    'filesProcessed': 0,
-    'processDuration': 0,
+    'files_processed': 0,
+    'process_duration': 0,
     'status': 0
 }
 
@@ -191,32 +238,32 @@ Date: {date}'''.format(**variables))
     print('\nVariables: {computer}, {username}, {time}, {date}, \\n')
     print('File selection: $gui, $path/to/file')
     print('\nEnter your custom message. Leave blank to use the default message.')
+    custom_message = input('\n> ').replace('\\n', '\n')
     try:
-        customMessage = input('\n> ').format(**variables).replace('\\n', '\n')
-    except:
-        print('Invalid variable. Please try again.')
-        sleep(1)
-        setupMessage()
-    options['message'] = customMessage
-    options['messageType'] = 'Custom'
+        custom_message = custom_message.format(**variables)
+    except (KeyError, ValueError) as e:
+        print(f'Invalid variable: {e}. No variables have been formatted.')
+        time.sleep(1)
+    options['message'] = custom_message
+    options['message_type'] = 'Custom'
     confirmMessage()
 
 
 def confirmMessage():
     support = 1
     display()
-    customMessage = options['message']
-    messageBackup = options['messageBackup']
-    if customMessage == '':
+    custom_message = options['message']
+    message_backup = options['message_backup']
+    if custom_message == '':
         try:
             options['message'] = configureMessage.format(**variables)
-            if options['message'] == options['messageBackup']:
-                options['messageType'] = 'Default'
+            if options['message'] == options['message_backup']:
+                options['message_type'] = 'Default'
             else:
-                options['messageType'] = 'Config'
+                options['message_type'] = 'Config'
         except:
-            options['message'] = options['messageBackup']
-            options['messageType'] = 'Backup'
+            options['message'] = options['message_backup']
+            options['message_type'] = 'Backup'
             print('''Error: Unable to parse variables used in "configureMessage".
 To fix this, remove any invalid {variables} from "configureMessage" at the top of this script.
 ''')
@@ -229,35 +276,35 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
             import win32gui, win32con
         except:
             print('\nError: unable to import "pypiwin32", this is needed for GUI mode')
-            confirm=input(str('Attempt to install "pypiwin32"? [Y/n] ')).upper()
-            if confirm != 'N':
-                try:
-                    os.system('pip install pypiwin32 --user')
-                    os.system('cls')
-                    os.system('"'+str(os.path.basename(__file__))+'"')
-                    exit()
-                except:
-                    print('Failed to install "pypiwin32"\nPress enter to go back...')
-                    input()
-                    setupMessage()
+            print('Attempting to install "pypiwin32"...')
+            try:
+                os.system('pip install pypiwin32 --user')
+                os.system('cls')
+                os.system('"'+str(os.path.basename(__file__))+'"')
+                exit()
+            except:
+                print('Failed to install "pypiwin32"\nPress enter to go back...')
+                input()
+                setupMessage()
+                exit()
         try:
             print('Please select a file from the File picker GUI')
             selectedFile, Filter, flags = win32gui.GetOpenFileNameW(
                 InitialDir=os.environ['temp'],
                 Flags=win32con.OFN_EXPLORER,
-                Title=f'{proj} v{ver}: Select a file to use for flooding',
+                Title=f'{data["meta"]["proj"]} v{data["meta"]["ver"]}: Select a file to use for flooding',
                 Filter='All files\0*.*\0',
                 FilterIndex=0)
             display()
-            options['filePath'] = selectedFile
-            options['messageType'] = '$File'
-            options['filename'] = os.path.basename(options['filePath'])
+            options['file_path'] = selectedFile
+            options['message_type'] = '$File'
+            options['filename'] = os.path.basename(options['file_path'])
             try:
-                with open(options['filePath'], 'r') as fileContents:
-                    options['message'] = fileContents.read()
+                with open(options['file_path'], 'r') as file_contents:
+                    options['message'] = file_contents.read()
             except:
                 options['message'] = 'Preview unavailable: Unsupported filetype'
-                options['messageType'] = '$Copy'
+                options['message_type'] = '$Copy'
             # Attempt to load variables
             try:
                 options['message'] = options['message'].format(**variables)
@@ -271,16 +318,16 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
     elif message[0] == '$':
         try:
             if os.path.exists(os.path.join(os.path.dirname(__file__), message[1:])):
-                options['filePath'] = os.path.join(
+                options['file_path'] = os.path.join(
                     os.path.dirname(__file__), message[1:])
-                options['messageType'] = '$File'
-                options['filename'] = os.path.basename(options['filePath'])
+                options['message_type'] = '$File'
+                options['filename'] = os.path.basename(options['file_path'])
                 try:
-                    with open(options['filePath'], 'r') as fileContents:
-                        options['message'] = fileContents.read()
+                    with open(options['file_path'], 'r') as file_contents:
+                        options['message'] = file_contents.read()
                 except:
                     options['message'] = 'Preview unavailable: Unsupported filetype'
-                    options['messageType'] = '$Copy'
+                    options['message_type'] = '$Copy'
                 #Attempt to load variables
                 try:
                     options['message'] = options['message'].format(**variables)
@@ -289,20 +336,20 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
         except:
             setupMessage()
     message = options['message']
-    messageType = options['messageType']
+    message_type = options['message_type']
     filename = options['filename']
-    print(f'Message Type: {messageType}')
-    if messageType == '$File' or messageType == '$Copy':
+    print(f'Message Type: {message_type}')
+    if message_type == '$File' or message_type == '$Copy':
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
-    confirm = confirmChoice()
+    confirm = confirm_choice()
     if confirm:
-        setupDrive()
+        setup_drive()
     else:
         setupMessage()
 
 
-def setupDrive():
+def setup_drive():
     display()
     driveArray = []
     bitmask = windll.kernel32.GetLogicalDrives()
@@ -313,144 +360,165 @@ def setupDrive():
     print('Available Drives:')
     for index, drive in enumerate(driveArray):
         print(f'{index + 1}. {drive}')
+        time.sleep(0.1)
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
-    selectedDrive = input(str('> ')).upper()
-    if selectedDrive == '':
+    selected_drive = input(str('> ')).upper()
+    if selected_drive == '':
         setupMessage()
-    if not selectedDrive in driveArray:
+    if not selected_drive in driveArray:
         print('Specified drive not found. Please try again.')
-        sleep(1)
-        setupDrive()
+        time.sleep(1)
+        setup_drive()
     else:
-        options['drive'] = selectedDrive
-        confirmDrive()
+        options['drive'] = selected_drive
+        confirm_drive()
 
 
-def confirmDrive():
+def confirm_drive():
     display()
-    selectedDrive = options['drive']
-    print(f'Selected Drive: {selectedDrive}')
-    time.sleep(0.5)
-    confirm = confirmChoice()
+    selected_drive = options['drive']
+    for character in f'Selected Drive: {selected_drive}':
+        print(character, end='', flush=True)
+        time.sleep(0.01)
+    print('')
+    time.sleep(0.2)
+    confirm = confirm_choice()
     if confirm:
-        confirmWrite()
+        confirm_write()
     else:
-        setupDrive()
+        setup_drive()
 
 
-def confirmWrite():
+def confirm_write():
     display()
     message = options['message']
-    messageType = options['messageType']
-    selectedDrive = options['drive']
+    message_type = options['message_type']
+    selected_drive = options['drive']
 
     print('Computer: {computer}'.format(**variables))
     print('Username: {username}'.format(**variables))
 
     print(f'Selected Drive: {options["drive"]}')
 
-    print(f'Message Type: {messageType}')
-    if messageType == '$File' or messageType == '$Copy':
+    print(f'Message Type: {message_type}')
+    if message_type == '$File' or message_type == '$Copy':
         filename = options['filename']
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
 
-    time.sleep(1)
-    print(f'\nYou are about to flood all subdirectories in [{selectedDrive}:\\]!')
-    time.sleep(0.5)
-    confirm = confirmChoice()
+    time.sleep(0.4)
+    for character in f'\nYou are about to flood all subdirectories in [{selected_drive}:\\]!':
+        print(character, end='', flush=True)
+        time.sleep(0.01)
+    print('')
+    time.sleep(0.2)
+    confirm = confirm_choice()
     if confirm:
-        commitWrite()
+        commit_write()
     else:
-        setupDrive()
+        setup_drive()
 
 
-def commitWrite():
+def commit_write():
     display()
 
     # Create a random number for confirmation and filenames
     rand = randint(10000, 99999)
-    customMsg = options['message']
-    selectedDrive = options['drive']
-    messageType = options['messageType']
+    custom_msg = options['message']
+    selected_drive = options['drive']
+    message_type = options['message_type']
 
-    print(f'\nSelected Drive: {selectedDrive}\nMessage Type: {messageType}\n\nTo begin flooding, please enter the confirmation code {rand}.')
+    print(f'\nSelected Drive: {selected_drive}\nMessage Type: {message_type}\n\n')
+    for character in 'To begin flooding, ':
+        print(character, end='', flush=True)
+        time.sleep(0.01)
+    time.sleep(0.2)
+    for character in 'please enter the confirmation code ':
+        print(character, end='', flush=True)
+        time.sleep(0.01)
+    time.sleep(0.2)
+    for character in f'{rand}.':
+        print(character, end='', flush=True)
+        time.sleep(0.08)
+    print('')
     confirm = input('\n>>> ')
     try:
         confirm = int(confirm)
     except:
-        confirmWrite()
+        confirm_write()
     i = 0
     if confirm != rand:
-        confirmWrite()
+        confirm_write()
 
-    filePath = options['filePath']
+    file_path = options['file_path']
 
-    if options['messageType'] == '$File' or options['messageType'] == '$Copy':
-        floodFilename = options['filename']
-        filenameEstimate = options['filename']
-        removaltoolFilename = f'Removal Tool [{floodFilename}].py'
-        scriptnameEstimate = f'Removal Tool [{floodFilename}'
+    if options['message_type'] == '$File' or options['message_type'] == '$Copy':
+        flood_filename = options['filename']
+        filename_estimate = options['filename']
+        removal_tool_filename = f'Removal Tool [{flood_filename}].py'
+        scriptname_estimate = f'Removal Tool [{flood_filename}'
     else:
-        scriptnameEstimate = f'Removal Tool [{rand}'
-        filenameEstimate = f'READ_ME [{rand}'
-        removaltoolFilename = f'{scriptnameEstimate}].py'
+        scriptname_estimate = f'Removal Tool [{rand}'
+        filename_estimate = f'READ_ME [{rand}'
+        removal_tool_filename = f'{scriptname_estimate}].py'
 
     # Removal instructions written to all READ_ME files
-    removalMsg = f'''\n\n\n
+    removal_msg = f'''\n\n\n
 Instructions to remove the files:
 
 Automatic:
-1. Navigate to "{selectedDrive}:\\"
+1. Navigate to "{selected_drive}:\\"
 2. Run "Removal Tool [{rand}].py"
 
 Manual:
-1. Navigate to "{selectedDrive}:\\"
+1. Navigate to "{selected_drive}:\\"
 2. Search for "READ_ME [{rand}]"
 3. Select everything and delete'''
 
     # Removal script created at the root of the selected drive
-    removalScript = f'''#{proj}: Removal Tool
-#github.com/smcclennon/LTFO
-ver="{ver}"
-rand="{rand}"
-selectedDrive="{selectedDrive}"
-import os,glob
-from ctypes import windll
+    removalScript = f'''#{data["meta"]["proj"]}: Removal Tool
+# LTFO Removal script
+# github.com/smcclennon/LTFO
+ver = "{data["meta"]["ver"]}"
+rand = "{rand}"
+selected_drive = "{selected_drive}"
+import os, glob, time
 from pathlib import Path
-windll.kernel32.SetConsoleTitleW('{proj}: Removal Tool - v'+ver)
-filenameEstimate="{filenameEstimate}"
-scriptnameEstimate="{scriptnameEstimate}"
-i=0
-for x in Path(selectedDrive+':/').glob('**'):
-        try:
-            i=i+1
-            for y in glob.glob(str(x)+'\\\\*'+filenameEstimate+'*', recursive=True):
-                    os.remove(y)
-                    print(str(i)+'. Deleted: '+str(y))
-        except:
-            print('[FAILED]: '+str(x))
+message_type = "{options['message_type']}"
+filename_estimate = "{filename_estimate}"
+if message_type != "$File":
+    filename_estimate = "*"+filename_estimate+"*"
+scriptname_estimate="{scriptname_estimate}"
+i = 0
+for folder in Path(selected_drive+':/').glob('**'):
+    try:
+        i += 1
+        for File in glob.glob(str(folder)+'\\\\'+filename_estimate, recursive=True):
+                os.remove(File)
+                print(str(i)+'. Deleted: '+str(File))
+    except:
+        print('[FAILED]: '+str(File))
 try:
-    i=i+1
-    for y in glob.glob(str(selectedDrive)+':\\\\'+scriptnameEstimate+'*.py', recursive=True):
-            os.remove(y)
-            print(str(i)+'. Deleted: '+str(y))
+    i += 1
+    for File in glob.glob(str(selected_drive)+':\\\\'+scriptname_estimate+'*.py', recursive=True):
+            os.remove(File)
+            print(str(i)+'. Deleted: '+str(File))
 except:
-    print('[FAILED]: '+str(x))
+    print('[FAILED]: '+str(File))
 print('\\n\\nFile cleanup complete!')
-os.system('timeout 3')'''
+time.sleep('timeout 5')'''
 
-    messageType = options['messageType']
+    message_type = options['message_type']
     print('\nCreating files...')
 
     options['start'] = time.time()  # Take note of the current time
-    for x in Path(selectedDrive+':/').glob('**'):
-        if options['messageType'] != '$File' and options['messageType'] != '$Copy':
-            floodFilename = f'READ_ME [{rand}] [#{i}].txt'
+    for x in Path(selected_drive+':/').glob('**'):
+        if options['message_type'] != '$File' and options['message_type'] != '$Copy':
+            flood_filename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
-                filename = removaltoolFilename
+                filename = removal_tool_filename
                 f = open(f'{x}\\{filename}', 'w')
                 f.write(removalScript)
                 f.close()
@@ -470,8 +538,8 @@ cancel the operation!
 
 No files have been generated yet.
 =====================================================''')
-                options['processDuration'] = time.time() - options['start']
-                options['filesProcessed'] = i
+                options['process_duration'] = time.time() - options['start']
+                options['files_processed'] = i
                 try:
                     f.close()
                     os.remove(f'{x}\\{filename}')
@@ -482,54 +550,47 @@ No files have been generated yet.
                     stats()
 
         try:  # Create the READ_ME files
-            filename = floodFilename
-            if messageType != '$Copy':
+            filename = flood_filename
+            if message_type != '$Copy':
                 f = open(str(x)+'\\'+filename, 'w')
                 msg = options['message']
-                if messageType != '$File':
-                    f.write(msg+removalMsg)
-                elif messageType == '$File':
+                if message_type != '$File':
+                    f.write(msg+removal_msg)
+                elif message_type == '$File':
                     f.write(msg)
                 f.close()
-            if messageType == '$Copy':
-                copyfile(f'{filePath}', f'{x}\\{filename}')
+            if message_type == '$Copy':
+                copyfile(f'{file_path}', f'{x}\\{filename}')
             i = i+1
             print(f'{i}. Created: {x}\\{filename}')
         except Exception as e:
             print(f'[FAILED]: {x}\\{filename}')
             print(e)
-    options['processDuration'] = time.time() - options['start']
-    options['filesProcessed'] = i
+    options['process_duration'] = time.time() - options['start']
+    options['files_processed'] = i
     stats()
 
 
 def stats():
-    filesProcessed = options['filesProcessed']
-    processDuration = options['processDuration']
+    files_processed = options['files_processed']
+    process_duration = options['process_duration']
     print('\n')
-    print(asciiRaw)
-    print(f'''Created {filesProcessed} files in {(round(processDuration, 2))} seconds!
+    print(ltfo_unicode_text)
+    print(f'''Created {files_processed} files in {(round(process_duration, 2))} seconds!
          Press any key to exit...''')
-    cmd('pause>nul')
+    os.system('pause>nul')
     options['status'] = 1
+    exit()
 
-# Debug = 0: Display a message and exit when an uncaught exception occurs
-# Debug = 1: Show error details & crash when an uncaught exception occurs
-debug = 0
 
 
 # Run the script
-if debug == 0:
-    try:
-        setupMessage()  # Start at the setupMessage module
-    except:
-        if options['status'] == 0:
-            # Uncaught exception:
-            print(f'''\n\n\nAn error occured after {proj} successfully loaded.
-        Visit github.com/smcclennon/{proj} for support''')
-            windll.user32.MessageBoxW(0, f'''An error occured after {proj} successfully loaded.
-        Visit github.com/smcclennon/{proj} for support.
-        Press OK to exit.''', f'{proj} v{ver}', 1)
-        exit()
-elif debug == 1:
-    setupMessage()
+try:
+    setupMessage()  # Start at the setupMessage module
+except KeyboardInterrupt:
+    print('KeyboardInterrupt. Goodbye!')
+    exit()
+except:
+    if options['status'] == 0:
+        traceback.print_exc()
+        print(f'\n\n\nAn error occured after {data["meta"]["proj"]} successfully loaded.\nVisit github.com/smcclennon/{data["meta"]["proj"]} for support')
