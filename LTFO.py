@@ -462,35 +462,36 @@ Manual:
 
     # Removal script created at the root of the selected drive
     removalScript = f'''#{data["meta"]["proj"]}: Removal Tool
-#github.com/smcclennon/LTFO
-ver="{data["meta"]["ver"]}"
-rand="{rand}"
-selected_drive="{selected_drive}"
-import os,glob,time
+# LTFO Removal script
+# github.com/smcclennon/LTFO
+ver = "{data["meta"]["ver"]}"
+rand = "{rand}"
+selected_drive = "{selected_drive}"
+import os, glob, time
 from pathlib import Path
 message_type = "{options['message_type']}"
-filename_estimate="{filename_estimate}"
+filename_estimate = "{filename_estimate}"
 if message_type != "$File":
-    filename_estimate="*"+filename_estimate+"*"
+    filename_estimate = "*"+filename_estimate+"*"
 scriptname_estimate="{scriptname_estimate}"
-i=0
+i = 0
 for folder in Path(selected_drive+':/').glob('**'):
     try:
-        i+=1
+        i += 1
         for File in glob.glob(str(folder)+'\\\\'+filename_estimate, recursive=True):
                 os.remove(File)
                 print(str(i)+'. Deleted: '+str(File))
     except:
         print('[FAILED]: '+str(File))
 try:
-    i=i+1
+    i += 1
     for File in glob.glob(str(selected_drive)+':\\\\'+scriptname_estimate+'*.py', recursive=True):
             os.remove(File)
             print(str(i)+'. Deleted: '+str(File))
 except:
     print('[FAILED]: '+str(File))
 print('\\n\\nFile cleanup complete!')
-os.system('timeout 3')'''
+time.sleep('timeout 5')'''
 
     message_type = options['message_type']
     print('\nCreating files...')
