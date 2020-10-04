@@ -3,7 +3,7 @@
 data = {
     "meta": {
         "proj": "LTFO",
-        "ver": "5.0.4",
+        "ver": "5.1.0",
         "proj_id": "1"
     },
     "setup": {
