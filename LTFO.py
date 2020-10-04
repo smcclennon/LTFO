@@ -137,7 +137,7 @@ def update():
 update()
 
 
-import subprocess, sys, os, traceback
+import subprocess, sys, os, traceback, time
 
 # Shortcut for time.sleep
 def sleep(x):
@@ -184,7 +184,7 @@ data["setup"]["import_status"] = 0
 while data["setup"]["import_status"] != 1:
     try:
         data["setup"]["import_status"] = 0
-        import time, string, socket, getpass, traceback
+        import string, socket, getpass
         from ctypes import windll
         from random import randint
         from pathlib import Path
