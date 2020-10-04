@@ -245,7 +245,7 @@ Date: {date}'''.format(**variables))
     try:
         custom_message = custom_message.format(**variables)
     except (KeyError, ValueError) as e:
-        print(f'Invalid variable: {e}, ignoring')
+        print(f'Invalid variable: {e}. No variables have been formatted.')
         sleep(1)
     options['message'] = custom_message
     options['message_type'] = 'Custom'
