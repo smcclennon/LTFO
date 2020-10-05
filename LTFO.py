@@ -149,22 +149,28 @@ def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package, "--user"])
 
 def import_rescue(e):
-    print(e)
     if 'No module named' in str(e):
         unknown_module = str(e).replace("'", "").replace("No module named ", "")
+        if data["setup"]["target_package"] == unknown_module:  # If the same module still fails to import after install
+            # https://stackoverflow.com/a/12333108
+            # https://stackoverflow.com/a/25384923
+            print('Refreshing sys.path')
+            import site
+            from importlib import reload
+            reload(site)  # Refresh sys.path
+        else:
+            data["setup"]["target_package"] = unknown_module
+
         print(f'\nError: unable to import "{unknown_module}"')
-        if data["setup"]["import_status"] == -1:
-            input('Press enter to exit...')
-            exit()
-        print('Installing dependancies...')
         try:
+            print('Installing dependancies...')
             install_package(unknown_module)
         except Exception as e:
             print(f'\n{e}\n\nFailed to install "{unknown_module}"\nPress enter to exit...')
             input()
             exit()
     else:
-        print(f'{e}\nUnknown error occured')
+        print(f'{e}\nUnknown error occurred')
         input('Press enter to exit...')
         exit()
 
@@ -179,6 +185,7 @@ if os.name != 'nt':
 print('Importing requirements...')
 data["setup"]["import_status"] = 0
 while data["setup"]["import_status"] != 1:
+    data["setup"]["import_status"] = 0
     try:
         data["setup"]["import_status"] = 0
         import string, socket, getpass
@@ -187,7 +194,7 @@ while data["setup"]["import_status"] != 1:
         from pathlib import Path
         from shutil import copyfile
         data["setup"]["import_status"] = 1
-    except Exception as e:
+    except ImportError as e:
         import_rescue(e)
 
 
