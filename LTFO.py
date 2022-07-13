@@ -48,11 +48,11 @@ def update():
     updater = {
         "proj": data["meta"]["proj"],
         "proj_id": data["meta"]["proj_id"],
-        "current_ver": data["meta"]["ver"]
+        "current_ver": data["meta"]["ver"],
+        "updater_ver": "2.0.3",
     }
 
-    # ===[ Changing code ]===
-    updater["updater_ver"] = "2.0.3"
+
     import os  # detecting OS type (nt, posix, java), clearing console window, restart the script
     from distutils.version import LooseVersion as semver  # as semver for readability
     import urllib.request, json  # load and parse the GitHub API, download updates
@@ -73,7 +73,7 @@ def update():
             ssl._create_default_https_context = _create_unverified_https_context
 
     print('Checking for updates...', end='\r')
-    for i in range(3):  # Try to retry the update up to 3 times if an error occurs
+    for _ in range(3):
         try:
             with urllib.request.urlopen("https://smcclennon.github.io/api/v2/update.json") as update_api:  # internal api
                 update_api = json.loads(update_api.read().decode())
@@ -89,13 +89,13 @@ def update():
             break
         except Exception as e:  # If updating fails 3 times
             github_releases = {0: {'tag_name': 'v0.0.0'}}
-            if str(e) == "HTTP Error 404: Not Found":  # No releases found
+            if str(e) in {
+                "HTTP Error 404: Not Found",
+                '<urlopen error [Errno 11001] getaddrinfo failed>',
+            }:
                 break
-            elif str(e) == '<urlopen error [Errno 11001] getaddrinfo failed>':  # Cannot connect to website
-                break
-            else:
-                print('Error encountered whilst checking for updates. Full traceback below...')
-                traceback.print_exc()
+            print('Error encountered whilst checking for updates. Full traceback below...')
+            traceback.print_exc()
 
     if github_releases != [] and semver(github_releases[0]['tag_name'].replace('v', '')) > semver(updater["current_ver"]):
         print('Update available!      ')
@@ -110,23 +110,30 @@ def update():
                     break  # Stop parsing patch notes after the current version has been met
             except TypeError:  # Incorrect version format + semver causes errors (Example: semver('Build-1'))
                 pass  # Skip/do nothing
-            except:  # Anything else, soft fail
-                traceback.print_exc()
-
         for release in changelog[::-1]:  # Step backwards, print latest patch notes last
             print(f'{release[0]}:\n{release[1]}\n')
 
         try:
-            confirm = input(str('Update now? [Y/n] ')).upper()
+            confirm = input('Update now? [Y/n] ').upper()
         except KeyboardInterrupt:
             confirm = 'N'
         if confirm != 'N':
             print('Downloading new file...')
-            urllib.request.urlretrieve(update_api["project"][updater["proj_id"]]["github_api"]["latest_release"]["release_download"], os.path.basename(__file__)+'.update_tmp')  # download the latest version to cwd
+            urllib.request.urlretrieve(
+                update_api["project"][updater["proj_id"]]["github_api"][
+                    "latest_release"
+                ]["release_download"],
+                f'{os.path.basename(__file__)}.update_tmp',
+            )
 
-            os.rename(os.path.basename(__file__), os.path.basename(__file__)+'.old')
-            os.rename(os.path.basename(__file__)+'.update_tmp', os.path.basename(__file__))
-            os.remove(os.path.basename(__file__)+'.old')
+
+            os.rename(os.path.basename(__file__), f'{os.path.basename(__file__)}.old')
+            os.rename(
+                f'{os.path.basename(__file__)}.update_tmp',
+                os.path.basename(__file__),
+            )
+
+            os.remove(f'{os.path.basename(__file__)}.old')
             os.system('cls||clear')  # Clear console window
             if os.name == 'nt':
                 os.system('"'+os.path.basename(__file__)+'" 1')
@@ -195,7 +202,7 @@ while data["setup"]["import_status"] != 1:
 def confirm_choice():
     while True:
         choice = input('Confirm? [Y/n] ').upper()
-        if choice == "" or choice == "Y":
+        if choice in ["", "Y"]:
             return True
         elif choice == "N":
             return False
@@ -339,11 +346,10 @@ To fix this, remove any invalid {variables} from "configureMessage" at the top o
     message_type = options['message_type']
     filename = options['filename']
     print(f'Message Type: {message_type}')
-    if message_type == '$File' or message_type == '$Copy':
+    if message_type in ['$File', '$Copy']:
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
-    confirm = confirm_choice()
-    if confirm:
+    if confirm := confirm_choice():
         setup_drive()
     else:
         setupMessage()
@@ -363,10 +369,10 @@ def setup_drive():
         time.sleep(0.1)
     print('\nPlease type the drive letter you wish to select. Leave blank to go back.')
 
-    selected_drive = input(str('> ')).upper()
+    selected_drive = input('> ').upper()
     if selected_drive == '':
         setupMessage()
-    if not selected_drive in driveArray:
+    if selected_drive not in driveArray:
         print('Specified drive not found. Please try again.')
         time.sleep(1)
         setup_drive()
@@ -383,8 +389,7 @@ def confirm_drive():
         time.sleep(0.01)
     print('')
     time.sleep(0.2)
-    confirm = confirm_choice()
-    if confirm:
+    if confirm := confirm_choice():
         confirm_write()
     else:
         setup_drive()
@@ -402,7 +407,7 @@ def confirm_write():
     print(f'Selected Drive: {options["drive"]}')
 
     print(f'Message Type: {message_type}')
-    if message_type == '$File' or message_type == '$Copy':
+    if message_type in ['$File', '$Copy']:
         filename = options['filename']
         print(f'Filename: {filename}')
     print(f'\n______ Message ______\n\n{message}\n\n______ Message ______\n')
@@ -413,8 +418,7 @@ def confirm_write():
         time.sleep(0.01)
     print('')
     time.sleep(0.2)
-    confirm = confirm_choice()
-    if confirm:
+    if confirm := confirm_choice():
         commit_write()
     else:
         setup_drive()
@@ -453,7 +457,7 @@ def commit_write():
 
     file_path = options['file_path']
 
-    if options['message_type'] == '$File' or options['message_type'] == '$Copy':
+    if options['message_type'] in ['$File', '$Copy']:
         flood_filename = options['filename']
         filename_estimate = options['filename']
         removal_tool_filename = f'Removal Tool [{flood_filename}].py'
@@ -513,15 +517,14 @@ time.sleep('timeout 5')'''
     print('\nCreating files...')
 
     options['start'] = time.time()  # Take note of the current time
-    for x in Path(selected_drive+':/').glob('**'):
-        if options['message_type'] != '$File' and options['message_type'] != '$Copy':
+    for x in Path(f'{selected_drive}:/').glob('**'):
+        if options['message_type'] not in ['$File', '$Copy']:
             flood_filename = f'READ_ME [{rand}] [#{i}].txt'
         if i == 0:
             try:  # Create the removal script
                 filename = removal_tool_filename
-                f = open(f'{x}\\{filename}', 'w')
-                f.write(removalScript)
-                f.close()
+                with open(f'{x}\\{filename}', 'w') as f:
+                    f.write(removalScript)
                 i = i+1
                 print(f'{i}. Created: {x}\\{filename}')
             except:
@@ -545,20 +548,19 @@ No files have been generated yet.
                     os.remove(f'{x}\\{filename}')
                 except:
                     pass
-                confirm = input(str('Cancel the operation? [Y/n] ')).upper()
+                confirm = input('Cancel the operation? [Y/n] ').upper()
                 if confirm != 'N':
                     stats()
 
         try:  # Create the READ_ME files
             filename = flood_filename
             if message_type != '$Copy':
-                f = open(str(x)+'\\'+filename, 'w')
-                msg = options['message']
-                if message_type != '$File':
-                    f.write(msg+removal_msg)
-                elif message_type == '$File':
-                    f.write(msg)
-                f.close()
+                with open(str(x)+'\\'+filename, 'w') as f:
+                    msg = options['message']
+                    if message_type != '$File':
+                        f.write(msg+removal_msg)
+                    else:
+                        f.write(msg)
             if message_type == '$Copy':
                 copyfile(f'{file_path}', f'{x}\\{filename}')
             i = i+1
@@ -590,7 +592,3 @@ try:
 except KeyboardInterrupt:
     print('KeyboardInterrupt. Goodbye!')
     exit()
-except:
-    if options['status'] == 0:
-        traceback.print_exc()
-        print(f'\n\n\nAn error occured after {data["meta"]["proj"]} successfully loaded.\nVisit github.com/smcclennon/{data["meta"]["proj"]} for support')
